@@ -19,6 +19,13 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            stateless: true   
+            json_login:
+                # api_login is a route we will create below
+                check_path: app_api_login
+                username_path: email       
+                password_path: password 
+            custom_authenticator: App\Security\ApiTokenAuthenticator
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
