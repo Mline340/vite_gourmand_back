@@ -9,36 +9,35 @@ use DateTimeImmutable;
 use Symfony\Component\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use App\Dto\RegistrationRequest;
 use App\Entity\User;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use OpenApi\Attributes as OA; 
+use ApiPlatform\Metadata\Post;
 
 
-
-
-#[Route('/api', name: 'app_api_')]
-#[OA\Tag(name: 'Security')]
+#[AsController]
 final class SecurityController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $manager, private SerializerInterface $serializer)
-    {
-    }
+    public function __construct(
+        private EntityManagerInterface $manager, 
+        private SerializerInterface $serializer
+    ) {}
 
-    #[Route('/registration', name: 'registration', methods: ['POST'])]
-   public function new(Request $request, UserPasswordHasherInterface $passwordHasher):JsonResponse
+    public function __invoke(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
         $user->setCreatedAt(new DateTimeImmutable());
+        
         $this->manager->persist($user);
         $this->manager->flush();
-        return new JsonResponse(
-            ['user'  => $user->getUserIdentifier(), 'apiToken' => $user->getApiToken(), 'roles' => $user->getRoles()],
-            Response::HTTP_CREATED
-        );
+        
+        return new JsonResponse(['message' => 'Inscription réussie'], 201);
     }
 
-     #[Route('/login', name: 'login', methods: ['POST'])]
+
+ #[Route('/login', name: 'login', methods: ['POST'])]
     public function login(
         Request $request,
         EntityManagerInterface $em,
