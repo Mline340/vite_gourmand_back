@@ -37,36 +37,4 @@ final class SecurityController extends AbstractController
     }
 
 
- #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login(
-        Request $request,
-        EntityManagerInterface $em,
-        UserPasswordHasherInterface $passwordHasher
-    ): JsonResponse {
-        
-        $data = json_decode($request->getContent(), true);
-
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-
-        if (!$email || !$password) {
-            return new JsonResponse(['error' => 'Email and password required'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-
-        if (!$user) {
-            return new JsonResponse(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        if (!$passwordHasher->isPasswordValid($user, $password)) {
-            return new JsonResponse(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
-        }
-        return new JsonResponse([
-            'user'  => $user->getUserIdentifier(),
-            'apiToken' => $user->getApiToken(),
-            'roles' => $user->getRoles(),
-        ]);
-
-    }
 }
