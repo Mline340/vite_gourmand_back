@@ -43,6 +43,7 @@ security:
         - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
+        - { path: ^/api/users, roles: PUBLIC_ACCESS }
         - { path: ^/api/(?!docs|contexts|login|registration).*, roles: ROLE_USER }
  #  Attention : Cette dernière solution ouvre TOUTE votre API sans authentification (à ne faire que pour le développement local).
 

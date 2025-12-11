@@ -47,6 +47,7 @@ final class LoginProcessor implements ProcessorInterface
             'user' => $user->getUserIdentifier(),
             'apiToken' => $user->getApiToken(),
             'roles' => array_map(fn($role) => strtolower(str_replace('ROLE_', '', $role)), $user->getRoles()),
+            'userId' => $user->getId(),
         ]);
     }
 }
