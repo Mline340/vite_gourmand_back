@@ -24,9 +24,6 @@ class Menu
     #[ORM\Column]
     private ?float $prix_par_personne = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $regime = null;
-
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
@@ -39,9 +36,26 @@ class Menu
     #[ORM\ManyToMany(targetEntity: Commande::class, inversedBy: 'menus')]
     private Collection $commande;
 
+    /**
+     * @var Collection<int, Regime>
+     */
+    #[ORM\ManyToMany(targetEntity: Regime::class, inversedBy: 'menus')]
+    private Collection $regimes;
+
+    #[ORM\ManyToOne(inversedBy: 'menus')]
+    private ?Theme $theme = null;
+
+    /**
+     * @var Collection<int, Plat>
+     */
+    #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'menu')]
+    private Collection $plats;
+
     public function __construct()
     {
         $this->commande = new ArrayCollection();
+        $this->regimes = new ArrayCollection();
+        $this->plats = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,18 +95,6 @@ class Menu
     public function setPrixParPersonne(float $prix_par_personne): static
     {
         $this->prix_par_personne = $prix_par_personne;
-
-        return $this;
-    }
-
-    public function getRegime(): ?string
-    {
-        return $this->regime;
-    }
-
-    public function setRegime(string $regime): static
-    {
-        $this->regime = $regime;
 
         return $this;
     }
@@ -141,6 +143,72 @@ class Menu
     public function removeCommande(Commande $commande): static
     {
         $this->commande->removeElement($commande);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Regime>
+     */
+    public function getRegimes(): Collection
+    {
+        return $this->regimes;
+    }
+
+    public function addRegime(Regime $regime): static
+    {
+        if (!$this->regimes->contains($regime)) {
+            $this->regimes->add($regime);
+        }
+
+        return $this;
+    }
+
+    public function removeRegime(Regime $regime): static
+    {
+        $this->regimes->removeElement($regime);
+
+        return $this;
+    }
+
+    public function getTheme(): ?Theme
+    {
+        return $this->theme;
+    }
+
+    public function setTheme(?Theme $theme): static
+    {
+        $this->theme = $theme;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Plat>
+     */
+    public function getPlats(): Collection
+    {
+        return $this->plats;
+    }
+
+    public function addPlat(Plat $plat): static
+    {
+        if (!$this->plats->contains($plat)) {
+            $this->plats->add($plat);
+            $plat->setMenu($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlat(Plat $plat): static
+    {
+        if ($this->plats->removeElement($plat)) {
+            // set the owning side to null (unless already changed)
+            if ($plat->getMenu() === $this) {
+                $plat->setMenu(null);
+            }
+        }
 
         return $this;
     }
