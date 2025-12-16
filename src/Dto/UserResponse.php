@@ -13,10 +13,10 @@ use App\State\UserInfoProvider;
             uriTemplate: '/users/{id}',
             provider: UserInfoProvider::class
         ),
-        new GetCollection(
-            uriTemplate: '/users',
-            provider: UserInfoProvider::class
-        )
+       new GetCollection(
+           uriTemplate: '/users',
+           provider: UserInfoProvider::class
+       )
     ]
 )]
 class UserResponse

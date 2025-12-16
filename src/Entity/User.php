@@ -2,6 +2,12 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Put;
+use App\Dto\UserUpdateRequest;
+use App\Dto\UserResponse;
+use App\State\UserUpdateProvider;
+use App\State\UserUpdateProcessor;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,6 +16,17 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
+#[ApiResource(
+    operations: [
+        new Put(
+            uriTemplate: '/users/{id}',
+            input: UserUpdateRequest::class,
+            output: UserResponse::class,
+            provider: UserUpdateProvider::class,  // AJOUT du Provider
+            processor: UserUpdateProcessor::class
+        )
+    ]
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -85,7 +102,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Commande>
      */
-    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'USer')]
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'User')]
     private Collection $commandes;
 
     public function __construct()
@@ -348,8 +365,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->commandes->removeElement($commande)) {
             // set the owning side to null (unless already changed)
-            if ($commande->getUSer() === $this) {
-                $commande->setUSer(null);
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
             }
         }
 
