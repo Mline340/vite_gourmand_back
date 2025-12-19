@@ -2,72 +2,70 @@
 
 namespace App\Security;
 
-use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
-use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 
 class ApiTokenAuthenticator extends AbstractAuthenticator
 {
-    private UserProviderInterface $userProvider;
+    public function __construct(
+        private UserRepository $userRepository
+    ) {}
 
-    public function __construct(UserProviderInterface $userProvider)
-    {
-        $this->userProvider = $userProvider;
+ public function supports(Request $request): ?bool
+{
+    return $request->headers->has('Authorization');
+}
+
+public function authenticate(Request $request): Passport
+{
+    error_log("🔍 ApiTokenAuthenticator::authenticate() appelé");
+    error_log("🔍 Headers: " . json_encode($request->headers->all()));
+    
+    $authHeader = $request->headers->get('Authorization');
+
+    if (null === $authHeader) {
+        throw new CustomUserMessageAuthenticationException('No API token provided');
     }
 
-    public function supports(Request $request): ?bool
-    {
-        // On active cet authenticator uniquement si le header X-AUTH-TOKEN est présent
-        return $request->headers->has('X-AUTH-TOKEN');
+    // Extraire le token du format "Bearer xxx"
+    if (!str_starts_with($authHeader, 'Bearer ')) {
+        throw new CustomUserMessageAuthenticationException('Invalid Authorization header format');
     }
+    
+    $apiToken = substr($authHeader, 7); // Enlever "Bearer "
 
-    public function authenticate(Request $request): Passport
-    {
-        $apiToken = $request->headers->get('X-AUTH-TOKEN');
-        if (null === $apiToken) {
-            throw new CustomUserMessageAuthenticationException('No API token provided');
-        }
+    return new SelfValidatingPassport(
+        new UserBadge($apiToken, function(string $token) {
+            $user = $this->userRepository->findOneBy(['apiToken' => $token]);
 
-        // Utilisation de UserBadge avec une closure pour charger l’utilisateur par token
-        return new SelfValidatingPassport(new UserBadge($apiToken, function(string $token) {
-            $user = $this->userProvider->loadUserByIdentifier($token);
             if (!$user) {
-                throw new UserNotFoundException();
+                throw new CustomUserMessageAuthenticationException('Invalid credentials.');
             }
+
             return $user;
-        }));
-    }
+        })
+    );
+}
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // Pas d'action particulière, continuer la requête
         return null;
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return new JsonResponse(
-            ['message' => strtr($exception->getMessageKey(), $exception->getMessageData())],
+            ['message' => 'Invalid credentials.'],
             Response::HTTP_UNAUTHORIZED
         );
     }
-
-    //    public function start(Request $request, ?AuthenticationException $authException = null): Response
-    //    {
-    //        /*
-    //         * If you would like this class to control what happens when an anonymous user accesses a
-    //         * protected page (e.g. redirect to /login), uncomment this method and make this class
-    //         * implement Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface.
-    //         *
-    //         * For more details, see https://symfony.com/doc/current/security/experimental_authenticators.html#configuring-the-authentication-entry-point
-    //         */
-    //    }
 }

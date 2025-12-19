@@ -42,13 +42,13 @@ security:
         - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
-        # ATTENTION : Cette ligne permet l'accès à /api/users sans authentification
-        # À retirer en production !
-        - { path: ^/api/users, roles: PUBLIC_ACCESS }
-        # Protection des routes admin et employé
+        # Routes admin 
+        - { path: ^/api/admin, roles: ROLE_ADMIN }  
+        # Les utilisateurs connectés peuvent modifier/supprimer leur compte
+        - { path: ^/api/users/\d+, roles: ROLE_USER, methods: [GET, PUT, DELETE] }
+        # Admin peut tout faire
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/employe, roles: ROLE_EMPLOYE }
-        # Toutes les autres routes API nécessitent ROLE_USER
         - { path: ^/api, roles: ROLE_USER }
 
 when@test:

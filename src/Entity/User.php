@@ -4,10 +4,15 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\GetCollection;
 use App\Dto\UserUpdateRequest;
 use App\Dto\UserResponse;
 use App\State\UserUpdateProvider;
 use App\State\UserUpdateProcessor;
+use App\State\UserDeleteProcessor;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,15 +20,30 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
+use App\Dto\CreateEmployeeInput;
+use App\State\CreateEmployeeProcessor;
 
 #[ApiResource(
     operations: [
+        new Get(),
+        new GetCollection(),
         new Put(
             uriTemplate: '/users/{id}',
             input: UserUpdateRequest::class,
             output: UserResponse::class,
-            provider: UserUpdateProvider::class,  // AJOUT du Provider
+            provider: UserUpdateProvider::class,
             processor: UserUpdateProcessor::class
+        ),
+        new Delete(
+            uriTemplate: '/users/{id}',
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            securityMessage: "Vous ne pouvez supprimer que votre propre compte ou être administrateur."
+        ),
+        new Post(
+            uriTemplate: '/employees',
+            input: CreateEmployeeInput::class,
+            processor: CreateEmployeeProcessor::class,
+            security: "is_granted('ROLE_ADMIN')"  // Seuls les admins peuvent créer des employés
         )
     ]
 )]
@@ -62,19 +82,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read'])]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)] 
     #[Groups(['user:read'])]
     private ?string $tel = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)] 
     #[Groups(['user:read'])]
     private ?string $adresse = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)] 
     #[Groups(['user:read'])]
     private ?string $codeP = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['user:read'])]
     private ?string $ville = null;
 
