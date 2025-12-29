@@ -28,7 +28,7 @@ class CreateAdminCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('email', InputArgument::REQUIRED, 'admmin@viteetgourmand.fr')
+            ->addArgument('email', InputArgument::REQUIRED, 'admin@viteetgourmand.fr')
             ->addArgument('password', InputArgument::REQUIRED, 'Julie123!!')
             ->addArgument('nom', InputArgument::REQUIRED, 'Admin')
             ->addArgument('prenom', InputArgument::REQUIRED, 'Julie');

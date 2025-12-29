@@ -2,12 +2,39 @@
 
 namespace App\Entity;
 
+use App\ApiResource\MenuDto;
+use App\State\MenuProcessor;
+use App\State\MenuProvider;
 use App\Repository\MenuRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MenuRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(
+            input: MenuDto::class,
+            processor: MenuProcessor::class
+        ),
+        new Put(
+            input: MenuDto::class,
+            processor: MenuProcessor::class
+        ),
+        new Delete(
+            processor: MenuProcessor::class
+        )
+    ],
+    provider: MenuProvider::class
+)]
 class Menu
 {
     #[ORM\Id]
