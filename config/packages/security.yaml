@@ -49,7 +49,6 @@ security:
         # Admin peut tout faire
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/employe, roles: ROLE_EMPLOYE }
-        - { path: ^/api, roles: ROLE_USER }
 
 when@test:
     security:

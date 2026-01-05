@@ -19,18 +19,25 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: MenuRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection(),
+        new Get(
+            security: "is_granted('PUBLIC_ACCESS')"
+        ),
+        new GetCollection(
+            security: "is_granted('PUBLIC_ACCESS')"
+        ),
         new Post(
             input: MenuDto::class,
-            processor: MenuProcessor::class
+            processor: MenuProcessor::class,
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
         ),
         new Put(
             input: MenuDto::class,
-            processor: MenuProcessor::class
+            processor: MenuProcessor::class,
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
         ),
         new Delete(
-            processor: MenuProcessor::class
+            processor: MenuProcessor::class,
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
         )
     ],
     provider: MenuProvider::class
