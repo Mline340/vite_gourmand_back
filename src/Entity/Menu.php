@@ -2,7 +2,8 @@
 
 namespace App\Entity;
 
-use App\ApiResource\MenuDto;
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\ApiProperty;
 use App\State\MenuProcessor;
 use App\State\MenuProvider;
 use App\Repository\MenuRepository;
@@ -20,20 +21,22 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource(
     operations: [
         new Get(
-            security: "is_granted('PUBLIC_ACCESS')"
+            security: "is_granted('PUBLIC_ACCESS')",
+            normalizationContext: ['groups' => ['menu:read']]
         ),
         new GetCollection(
-            security: "is_granted('PUBLIC_ACCESS')"
+            security: "is_granted('PUBLIC_ACCESS')",
+            normalizationContext: ['groups' => ['menu:read']]
         ),
         new Post(
-            input: MenuDto::class,
             processor: MenuProcessor::class,
-            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['menu:write']]
         ),
         new Put(
-            input: MenuDto::class,
             processor: MenuProcessor::class,
-            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['menu:write']]
         ),
         new Delete(
             processor: MenuProcessor::class,
@@ -50,45 +53,55 @@ class Menu
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['menu:read', 'menu:write'])]
     private ?string $titre = null;
 
     #[ORM\Column]
+    #[Groups(['menu:read', 'menu:write'])]
     private ?int $nombre_personne_mini = null;
 
     #[ORM\Column]
+    #[Groups(['menu:read', 'menu:write'])]
     private ?float $prix_par_personne = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['menu:read', 'menu:write'])]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['menu:read', 'menu:write'])]
     private ?int $quantite_restante = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['menu:read', 'menu:write'])]
+    private ?string $conditions = null;
 
     /**
      * @var Collection<int, Commande>
      */
     #[ORM\ManyToMany(targetEntity: Commande::class, inversedBy: 'menus')]
+    #[Groups(['menu:read'])] 
     private Collection $commande;
 
-    /**
-     * @var Collection<int, Regime>
-     */
-    #[ORM\ManyToMany(targetEntity: Regime::class, inversedBy: 'menus')]
-    private Collection $regimes;
+    #[ORM\ManyToOne(inversedBy: 'menus')]
+    #[Groups(['menu:read', 'menu:write'])]
+    private ?Regime $regime = null;
 
     #[ORM\ManyToOne(inversedBy: 'menus')]
+    #[Groups(['menu:read'])] 
     private ?Theme $theme = null;
 
     /**
      * @var Collection<int, Plat>
      */
-    #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'menu')]
+    #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'menu', cascade: ['persist', 'remove'])]
+    #[ApiProperty(readableLink: false, writableLink: false)]
+    #[Groups(['menu:read'])] 
     private Collection $plats;
 
     public function __construct()
     {
         $this->commande = new ArrayCollection();
-        $this->regimes = new ArrayCollection();
         $this->plats = new ArrayCollection();
     }
 
@@ -157,6 +170,18 @@ class Menu
         return $this;
     }
 
+    public function getConditions(): ?string
+    {
+        return $this->conditions;
+    }
+
+    public function setConditions(?string $conditions): static
+    {
+     $this->conditions = $conditions;
+
+     return $this;
+    }
+
     /**
      * @return Collection<int, Commande>
      */
@@ -181,27 +206,14 @@ class Menu
         return $this;
     }
 
-    /**
-     * @return Collection<int, Regime>
-     */
-    public function getRegimes(): Collection
+    public function getRegime(): ?Regime
     {
-        return $this->regimes;
+        return $this->regime;
     }
 
-    public function addRegime(Regime $regime): static
+    public function setRegime(?Regime $regime): static
     {
-        if (!$this->regimes->contains($regime)) {
-            $this->regimes->add($regime);
-        }
-
-        return $this;
-    }
-
-    public function removeRegime(Regime $regime): static
-    {
-        $this->regimes->removeElement($regime);
-
+        $this->regime = $regime;
         return $this;
     }
 

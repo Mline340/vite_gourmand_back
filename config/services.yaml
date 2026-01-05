@@ -25,6 +25,9 @@ services:
             - '../src/ApiOperation/'
             - '../src/Dto/'  
 
+    App\ApiResource\:
+        resource: '../src/ApiResource/'
+
     # Configuration explicite pour le LoginProcessor
     App\State\LoginProcessor:
         tags:

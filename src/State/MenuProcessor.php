@@ -2,11 +2,11 @@
 
 namespace App\State;
 
-use App\ApiResource\MenuDto;
 use App\Entity\Menu;
 use App\Entity\Plat;
 use App\Entity\Regime;
 use App\Entity\Theme;
+use App\Entity\Allergene;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Put;
@@ -33,65 +33,60 @@ class MenuProcessor implements ProcessorInterface
             return null;
         }
 
-        // Gestion du POST et PUT
-        if (!$data instanceof MenuDto) {
-            throw new \InvalidArgumentException('Expected MenuDto');
+        // $data est maintenant directement un Menu
+        if (!$data instanceof Menu) {
+            throw new \InvalidArgumentException('Expected Menu entity');
         }
 
-        // Récupérer ou créer le menu
-        if ($operation instanceof Put) {
-            $menu = $this->entityManager->getRepository(Menu::class)->find($uriVariables['id']);
-            if (!$menu) {
-                throw new NotFoundHttpException('Menu non trouvé');
+        $menu = $data;
+
+        // Gérer les plats si présents dans les données brutes
+        $requestData = $context['request']?->toArray() ?? [];
+        
+        if (isset($requestData['plats']) && is_array($requestData['plats'])) {
+            // Supprimer les anciens plats en mode PUT
+            if ($operation instanceof Put) {
+                foreach ($menu->getPlats() as $plat) {
+                    $menu->removePlat($plat);
+                    $this->entityManager->remove($plat);
+                }
             }
-        } else {
-            $menu = new Menu();
-        }
 
-        // Mapper les propriétés simples
-        $menu->setTitre($data->titre);
-        $menu->setNombrePersonneMini($data->nombre_personne_mini);
-        $menu->setPrixParPersonne($data->prix_par_personne);
-        $menu->setDescription($data->description);
-        $menu->setQuantiteRestante($data->quantite_restante);
+            // Créer les nouveaux plats
+            foreach ($requestData['plats'] as $platData) {
+                $plat = new Plat();
+                $plat->setTitrePlat($platData['titre_plat']);
+                $plat->setPhoto($platData['photo'] ?? null);
+                $plat->setMenu($menu);
 
-        // Associer le thème
-        if ($data->themeId) {
-            $theme = $this->entityManager->getRepository(Theme::class)->find($data->themeId);
-            if (!$theme) {
-                throw new NotFoundHttpException('Thème non trouvé');
-            }
-            $menu->setTheme($theme);
-        } else {
-            $menu->setTheme(null);
-        }
-
-        // Associer les régimes
-        $menu->getRegimes()->clear();
-        foreach ($data->regimeIds as $regimeId) {
-            $regime = $this->entityManager->getRepository(Regime::class)->find($regimeId);
-            if (!$regime) {
-                throw new NotFoundHttpException("Régime avec l'ID $regimeId non trouvé");
-            }
-            $menu->addRegime($regime);
-        }
-
-        // Gérer les plats
-        if ($operation instanceof Put) {
-            // En mode PUT, on supprime les anciens plats
-            foreach ($menu->getPlats() as $plat) {
-                $menu->removePlat($plat);
-                $this->entityManager->remove($plat);
+                // Gérer les allergènes
+                if (isset($platData['allergeneIds']) && is_array($platData['allergeneIds'])) {
+                    foreach ($platData['allergeneIds'] as $allergeneId) {
+                        $allergene = $this->entityManager->getRepository(Allergene::class)->find($allergeneId);
+                        if ($allergene) {
+                            $plat->addAllergene($allergene);
+                        }
+                    }
+                }
+                
+                $menu->addPlat($plat);
             }
         }
 
-        // Créer les nouveaux plats
-        foreach ($data->plats as $platData) {
-            $plat = new Plat();
-            $plat->setTitrePlat($platData->titre_plat ?? '');
-            $plat->setPhoto($platData->photo ?? null);
-            
-            $menu->addPlat($plat);
+        // Gérer regimeIds si présent
+        if (isset($requestData['regimeId'])) {
+            $regime = $this->entityManager->getRepository(Regime::class)->find($requestData['regimeId']);
+            if ($regime) {
+            $menu->setRegime($regime);
+             }
+        }
+
+        // Gérer themeId si présent
+        if (isset($requestData['themeId'])) {
+            $theme = $this->entityManager->getRepository(Theme::class)->find($requestData['themeId']);
+            if ($theme) {
+                $menu->setTheme($theme);
+            }
         }
 
         $this->entityManager->persist($menu);

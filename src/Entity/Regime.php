@@ -67,7 +67,7 @@ class Regime
     {
         if (!$this->menus->contains($menu)) {
             $this->menus->add($menu);
-            $menu->addRegime($this);
+            $menu->setRegime($this);
         }
 
         return $this;
@@ -75,10 +75,13 @@ class Regime
 
     public function removeMenu(Menu $menu): static
     {
-        if ($this->menus->removeElement($menu)) {
-            $menu->removeRegime($this);
+    if ($this->menus->removeElement($menu)) {
+        // Compare avec le régime actuel du menu
+        if ($menu->getRegime() === $this) {
+            $menu->setRegime(null);  // ← Retire le régime
         }
+    }
 
-        return $this;
+     return $this;
     }
 }

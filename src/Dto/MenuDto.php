@@ -24,20 +24,17 @@ class MenuDto
     #[Assert\PositiveOrZero(message: "La quantité restante doit être positive ou nulle")]
     public ?int $quantite_restante = null;
 
-    /**
-     * ID du thème existant
-     */
     public ?int $themeId = null;
 
     /**
-     * IDs des régimes existants
      * @var int[]
      */
     #[Assert\Type('array')]
     public array $regimeIds = [];
 
     /**
-     * @var array
+     * Tableau de plats sous forme de tableaux associatifs
+     * @var array<array{titre_plat: string, photo?: string, allergeneIds?: int[]}>
      */
     #[Assert\Type('array')]
     public array $plats = [];

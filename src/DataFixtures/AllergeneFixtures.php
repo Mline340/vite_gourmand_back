@@ -11,6 +11,7 @@ class AllergeneFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $allergenes = [
+            'Aucun',
             'Arachide',
             'Céleri',
             'Crustacés',
