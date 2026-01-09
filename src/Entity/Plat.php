@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Patch;
+use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -15,6 +17,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlatRepository::class)]
 #[ApiResource(
+    normalizationContext: ['groups' => ['plat:read']],  
+    denormalizationContext: ['groups' => ['plat:write']],
     operations: [
         new Get(
             security: "is_granted('PUBLIC_ACCESS')"
@@ -28,6 +32,8 @@ use Doctrine\ORM\Mapping as ORM;
         new Put(
             security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
         ),
+        new Patch(security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
+        ),
         new Delete(
             security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
         )
@@ -38,15 +44,19 @@ class Plat
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['plat:read', 'menu:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['plat:read', 'plat:write', 'menu:read'])]
     private ?string $titre_plat = null;
 
-    #[ORM\Column(length: 500, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['plat:read', 'plat:write', 'menu:read'])]
     private ?string $photo = null;
 
     #[ORM\ManyToOne(inversedBy: 'plats')]
+    #[Groups(['plat:read', 'plat:write'])] 
     private ?Menu $menu = null;
 
     /**

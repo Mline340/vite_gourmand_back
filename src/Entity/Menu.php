@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Patch;
 use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\ApiProperty;
 use App\State\MenuProcessor;
@@ -34,6 +35,11 @@ use Doctrine\ORM\Mapping as ORM;
             denormalizationContext: ['groups' => ['menu:write']]
         ),
         new Put(
+            processor: MenuProcessor::class,
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['menu:write']]
+        ),
+        new Patch(
             processor: MenuProcessor::class,
             security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
             denormalizationContext: ['groups' => ['menu:write']]
@@ -95,8 +101,7 @@ class Menu
      * @var Collection<int, Plat>
      */
     #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'menu', cascade: ['persist', 'remove'])]
-    #[ApiProperty(readableLink: false, writableLink: false)]
-    #[Groups(['menu:read'])] 
+    #[Groups(['menu:read'])]
     private Collection $plats;
 
     public function __construct()

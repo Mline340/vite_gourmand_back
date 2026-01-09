@@ -14,10 +14,7 @@ class RegimeFixtures extends Fixture
             'Tous',
             'Végétarien',
             'Vegan',
-            'Sans gluten',
-            'Classique',
-            'Flexitarien',
-            'Paléo'
+            'Classique'
         ];
 
         foreach ($regimes as $libelle) {
