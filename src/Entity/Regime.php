@@ -9,28 +9,32 @@ use App\Repository\RegimeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: RegimeRepository::class)]
 #[ApiResource(
     operations: [
         new GetCollection(),
         new Get()
-    ]
+    ],
+    normalizationContext: ['groups' => ['regime:read']]
 )]
 class Regime
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['regime:read', 'menu:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['regime:read', 'menu:read'])]
     private ?string $libelle = null;
 
     /**
      * @var Collection<int, Menu>
      */
-    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'regimes')]
+    #[ORM\OneToMany(targetEntity: Menu::class, mappedBy: 'regime')]
     private Collection $menus;
 
     public function __construct()
@@ -51,7 +55,6 @@ class Regime
     public function setLibelle(?string $libelle): static
     {
         $this->libelle = $libelle;
-
         return $this;
     }
 
@@ -75,13 +78,12 @@ class Regime
 
     public function removeMenu(Menu $menu): static
     {
-    if ($this->menus->removeElement($menu)) {
-        // Compare avec le régime actuel du menu
-        if ($menu->getRegime() === $this) {
-            $menu->setRegime(null);  // ← Retire le régime
+        if ($this->menus->removeElement($menu)) {
+            if ($menu->getRegime() === $this) {
+                $menu->setRegime(null);
+            }
         }
-    }
 
-     return $this;
+        return $this;
     }
 }

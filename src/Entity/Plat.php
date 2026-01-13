@@ -63,6 +63,8 @@ class Plat
      * @var Collection<int, Allergene>
      */
     #[ORM\ManyToMany(targetEntity: Allergene::class, inversedBy: 'plats')]
+    #[ORM\JoinTable(name: 'plat_allergene')]
+    #[Groups(['plat:read'])]
     private Collection $allergenes;
 
     public function __construct()
