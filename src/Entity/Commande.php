@@ -2,48 +2,99 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Serializer\Attribute\Groups;
 use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use App\State\CommandeProcessor;
+use App\State\CommandeProvider;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => ['commande:read']]
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['commande:read']]
+        ),
+        
+        new Post(
+            processor: CommandeProcessor::class,
+            security: "is_granted('ROLE_USER')", 
+            denormalizationContext: ['groups' => ['commande:write']]
+        ),
+        new Put(
+            processor: CommandeProcessor::class,
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['commande:write']]
+        ),
+        new Patch(
+            processor: CommandeProcessor::class,
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['commande:write']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
+        )
+    ],
+    provider: CommandeProvider::class
+)]
 class Commande
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['commande:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['commande:read'])]
     private ?string $numero_commande = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['commande:read'])]
     private ?\DateTime $date_commande = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['commande:read', 'commande:write'])]
     private ?\DateTime $date_prestation = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[Groups(['commande:read', 'commande:write'])]
     private ?\DateTime $heure_liv = null;
 
     #[ORM\Column]
+    #[Groups(['commande:read'])]
     private ?float $prix_menu = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
     private ?int $nombre_personne = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['commande:read'])]
     private ?float $prix_liv = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['commande:read'])]
     private ?string $statut = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
     private ?bool $pret_mat = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['commande:read'])]
     private ?bool $retour_mat = null;
 
     /**
@@ -53,7 +104,7 @@ class Commande
     private Collection $menus;
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
-    private ?User $USer = null;
+    private ?User $User = null;
 
     public function __construct()
     {
@@ -212,14 +263,14 @@ class Commande
         return $this;
     }
 
-    public function getUSer(): ?User
+    public function getUser(): ?User
     {
-        return $this->USer;
+        return $this->User;
     }
 
-    public function setUSer(?User $USer): static
+    public function setUser(?User $User): static
     {
-        $this->USer = $USer;
+        $this->User = $User;
 
         return $this;
     }
