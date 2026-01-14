@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\StatutCommande;
 use Symfony\Component\Serializer\Attribute\Groups;
 use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,6 +11,7 @@ use App\State\CommandeProvider;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
@@ -85,9 +87,25 @@ class Commande
     #[Groups(['commande:read'])]
     private ?float $prix_liv = null;
 
-    #[ORM\Column(length: 255)]
-    #[Groups(['commande:read'])]
-    private ?string $statut = null;
+    #[ORM\Column(length: 255, enumType: StatutCommande::class)]
+    #[Groups(['commande:read', 'commande:write'])]
+    #[ApiProperty(
+     openapiContext: [
+        'type' => 'string',
+        'enum' => [
+            'En attente', 
+            'Accepté', 
+            'En préparation', 
+            'En cours de livraison', 
+            'Livré', 
+            'En attente du retour de matériel', 
+            'Terminé', 
+            'Annulé'
+            ],
+            'example' => 'En attente'
+        ]
+    )]
+    private ?StatutCommande $statut = null;
 
     #[ORM\Column(nullable: true)]
     #[Groups(['commande:read', 'commande:write'])]
@@ -100,15 +118,20 @@ class Commande
     /**
      * @var Collection<int, Menu>
      */
-    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'commande')]
+    #[ORM\ManyToMany(targetEntity: Menu::class, inversedBy: 'commande')] 
+    #[ORM\JoinTable(name: 'commande_menu')]
+    #[Groups(['commande:read', 'commande:write'])]
     private Collection $menus;
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['commande:read'])]
     private ?User $User = null;
 
     public function __construct()
     {
         $this->menus = new ArrayCollection();
+        $this->statut = StatutCommande::EN_ATTENTE;
     }
 
     public function getId(): ?int
@@ -200,15 +223,14 @@ class Commande
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getStatut(): ?StatutCommande
     {
         return $this->statut;
     }
 
-    public function setStatut(string $statut): static
+    public function setStatut(StatutCommande $statut): static
     {
         $this->statut = $statut;
-
         return $this;
     }
 

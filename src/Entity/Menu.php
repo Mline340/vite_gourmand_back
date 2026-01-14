@@ -85,9 +85,9 @@ class Menu
     private ?string $conditions = null;
 
     /**
-     * @var Collection<int, Commande>
-     */
-    #[ORM\ManyToMany(targetEntity: Commande::class, inversedBy: 'menus')]
+    * @var Collection<int, Commande>
+    */
+    #[ORM\ManyToMany(targetEntity: Commande::class, mappedBy: 'menus')] 
     #[Groups(['menu:read'])] 
     private Collection $commande;
 
