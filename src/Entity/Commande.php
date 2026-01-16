@@ -24,10 +24,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource(
     operations: [
         new Get(
+            provider: CommandeProvider::class,
             normalizationContext: ['groups' => ['commande:read']]
         ),
         new GetCollection(
+            provider: CommandeProvider::class,
             normalizationContext: ['groups' => ['commande:read']]
+
         ),
         
         new Post(
@@ -125,8 +128,8 @@ class Commande
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['commande:read'])]
-    private ?User $User = null;
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -287,12 +290,12 @@ class Commande
 
     public function getUser(): ?User
     {
-        return $this->User;
+        return $this->user;
     }
 
-    public function setUser(?User $User): static
+    public function setUser(?User $user): static
     {
-        $this->User = $User;
+        $this->user = $user;
 
         return $this;
     }

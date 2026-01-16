@@ -39,6 +39,6 @@ class CommandeProvider implements ProviderInterface
         }
 
         // Sinon, on ne retourne que les commandes liées à l'utilisateur connecté
-        return $repository->findBy(['USer' => $user]);
+        return $repository->findBy(['user' => $user]);
     }
 }

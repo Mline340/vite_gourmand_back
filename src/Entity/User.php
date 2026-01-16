@@ -25,8 +25,11 @@ use App\State\CreateEmployeeProcessor;
 
 #[ApiResource(
     operations: [
-        new Get(),
         new GetCollection(),
+        new Get(
+            uriTemplate: '/users/{id}',
+            normalizationContext: ['groups' => ['user:read', 'user:orders']]
+        ),
         new Put(
             uriTemplate: '/users/{id}',
             input: UserUpdateRequest::class,
@@ -122,7 +125,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Commande>
      */
-    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'User')]
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'user')]
+    #[Groups(['user:orders'])]
     private Collection $commandes;
 
     public function __construct()
