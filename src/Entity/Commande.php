@@ -45,7 +45,7 @@ use Doctrine\ORM\Mapping as ORM;
         ),
         new Patch(
             processor: CommandeProcessor::class,
-            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
+            security: "is_granted('ROLE_USER') and object.getUser() == user or is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')",
             denormalizationContext: ['groups' => ['commande:write']]
         ),
         new Delete(
