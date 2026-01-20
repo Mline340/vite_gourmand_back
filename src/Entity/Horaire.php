@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\HoraireRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -17,8 +18,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
         new Get(security: "is_granted('PUBLIC_ACCESS')"),
-        new Post(security: "is_granted('ROLE_EMPLOYE')"),
-        new Put(security: "is_granted('ROLE_EMPLOYE')"),
+        new Post(security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
     normalizationContext: ['groups' => ['horaire:read']],
@@ -38,11 +39,17 @@ class Horaire
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['horaire:read', 'horaire:write'])]
+    #[Assert\Regex(pattern: '/^\d{2}:\d{2}$/', message: 'Format attendu: HH:MM')]
     private ?string $heure_ouverture = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['horaire:read', 'horaire:write'])]
+    #[Groups(['horaire:read', 'horaire:write'])] 
+    #[Assert\Regex(pattern: '/^\d{2}:\d{2}$/', message: 'Format attendu: HH:MM')]
     private ?string $heure_fermeture = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['horaire:read', 'horaire:write'])]
+    private ?string $note = null;
 
     public function getId(): ?int
     {
@@ -82,6 +89,17 @@ class Horaire
     {
         $this->heure_fermeture = $heure_fermeture;
 
+        return $this;
+    }
+
+    public function getNote(): ?string
+    {
+    return $this->note;
+    }
+
+    public function setNote(?string $note): self
+    {
+        $this->note = $note;
         return $this;
     }
 }
