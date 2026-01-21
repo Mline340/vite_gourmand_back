@@ -131,6 +131,23 @@ class Commande
     #[Groups(['commande:read', 'commande:write'])]
     private ?User $user = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?string $contactMethod = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?string $modificationReason = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['commande:read'])]
+    private ?User $modifiedBy = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['commande:read'])]
+    private ?\DateTime $ModifiedAt = null;
+
     public function __construct()
     {
         $this->menus = new ArrayCollection();
@@ -296,6 +313,54 @@ class Commande
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getContactMethod(): ?string
+    {
+        return $this->contactMethod;
+    }
+
+    public function setContactMethod(?string $contactMethod): static
+    {
+        $this->contactMethod = $contactMethod;
+
+        return $this;
+    }
+
+    public function getModificationReason(): ?string
+    {
+        return $this->modificationReason;
+    }
+
+    public function setModificationReason(?string $modificationReason): static
+    {
+        $this->modificationReason = $modificationReason;
+
+        return $this;
+    }
+
+    public function getModifiedBy(): ?User
+    {
+        return $this->modifiedBy;
+    }
+
+    public function setModifiedBy(?User $modifiedBy): static
+    {
+        $this->modifiedBy = $modifiedBy;
+
+        return $this;
+    }
+
+    public function getModifiedAt(): ?\DateTime
+    {
+        return $this->ModifiedAt;
+    }
+
+    public function setModifiedAt(?\DateTime $ModifiedAt): static
+    {
+        $this->ModifiedAt = $ModifiedAt;
 
         return $this;
     }

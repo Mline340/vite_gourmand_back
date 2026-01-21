@@ -61,7 +61,7 @@ class Menu
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['menu:read', 'menu:write'])]
+    #[Groups(['menu:read', 'menu:write', 'commande:read'])]
     private ?string $titre = null;
 
     #[ORM\Column]

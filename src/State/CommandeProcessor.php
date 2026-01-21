@@ -59,6 +59,10 @@ class CommandeProcessor implements ProcessorInterface
                 throw new AccessDeniedHttpException('Vous n\'avez pas le droit de modifier cette commande.');
             }
             
+            // Enregistrer qui a modifié et quand
+                $data->setModifiedBy($user);
+                $data->setModifiedAt(new \DateTime());
+                
             $previousData = $context['previous_data'] ?? null;
             if ($previousData instanceof Commande) {
                 $this->validerTransitionStatut($data, $previousData);

@@ -15,7 +15,7 @@ class CommandeProvider implements ProviderInterface
         private Security $security
     ) {}
 
-   public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         $repository = $this->entityManager->getRepository(Commande::class);
         $user = $this->security->getUser();
@@ -24,12 +24,22 @@ class CommandeProvider implements ProviderInterface
         if (isset($uriVariables['id'])) {
             $commande = $repository->find($uriVariables['id']);
 
-            // Sécurité : Si la commande n'appartient pas à l'utilisateur et qu'il n'est pas Admin
-            if ($commande && $commande->getUSer() !== $user && !$this->security->isGranted('ROLE_ADMIN')) {
-                return null; // Ou jeter une AccessDeniedException
+            if (!$commande) {
+                return null;
             }
 
-            return $commande;
+            // Sécurité : Employés et Admins peuvent voir toutes les commandes
+            if ($this->security->isGranted('ROLE_EMPLOYE') || $this->security->isGranted('ROLE_ADMIN')) {
+                return $commande;
+            }
+
+            // Utilisateur peut voir uniquement ses propres commandes
+            if ($commande->getUser() === $user) {
+                return $commande;
+            }
+
+            // Si aucune condition n'est remplie, accès refusé
+            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
         }
 
         // 2. Cas de la Collection : /commandes
