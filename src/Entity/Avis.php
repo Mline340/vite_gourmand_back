@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\Patch;
-use App\State\AvisProcessor;
-use App\State\AvisProvider;
+use App\State\MesAvisProcessor;
+use App\State\MesAvisProvider;
 use App\Enum\StatutAvis;
 use ApiPlatform\Metadata\ApiProperty;
 use App\Repository\AvisRepository;
@@ -27,6 +27,12 @@ use Doctrine\ORM\Mapping as ORM;
         security: "true",
         normalizationContext: ['groups' => ['avis:read', 'user:read:public']],
         filters: ['avis.statut_filter']
+        ),
+        new GetCollection(
+            uriTemplate: '/avis/mes-avis',
+            security: "is_granted('ROLE_USER')", 
+            normalizationContext: ['groups' => ['avis:read']],
+            provider: MesAvisProvider::class
         ),
         new GetCollection(
             security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_EMPLOYE')",
