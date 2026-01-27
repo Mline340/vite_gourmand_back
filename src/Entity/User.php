@@ -78,11 +78,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:read', 'commande:read'])]
+    #[Groups(['user:read', 'commande:read', 'user:read:public'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:read', 'commande:read'])]
+    #[Groups(['user:read', 'commande:read', 'user:read:public'])]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 255, nullable: true)] 
@@ -120,6 +120,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Avis>
      */
     #[ORM\OneToMany(targetEntity: Avis::class, mappedBy: 'user')]
+    #[Groups(['user:read'])] 
     private Collection $avis;
 
     /**

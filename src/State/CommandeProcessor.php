@@ -68,11 +68,24 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
         $data->setModifiedBy($user);
         $data->setModifiedAt(new \DateTime());
         
+        // Ne pas écraser modifiedBy et modifiedAt si c'est juste un dépôt d'avis
+    if ($context['previous_data'] ?? null) {
+        $previousData = $context['previous_data'];
+        if ($data->isAvisDepose() !== $previousData->isAvisDepose() && 
+            $data->getStatut() === $previousData->getStatut()) {
+            // C'est juste un dépôt d'avis, ne pas modifier modifiedBy/At
+            $data->setModifiedBy($previousData->getModifiedBy());
+            $data->setModifiedAt($previousData->getModifiedAt());
+        }
+    }
+
         $previousData = $context['previous_data'] ?? null;
-        
-        // VALIDER LA TRANSITION DE STATUT (une seule fois, au bon endroit)
+
+        // VALIDER LA TRANSITION DE STATUT seulement si le statut change
         if ($previousData instanceof Commande) {
-            $this->validerTransitionStatut($previousData, $data); // ← ORDRE CORRECT
+            if ($previousData->getStatut() !== $data->getStatut()) {
+                $this->validerTransitionStatut($previousData, $data);
+            }
             
             if ($data->getNombrePersonne() !== $previousData->getNombrePersonne() ||
                 $data->getMenus()->count() !== $previousData->getMenus()->count()) {

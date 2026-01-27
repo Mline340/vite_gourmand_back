@@ -63,7 +63,7 @@ class Commande
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['commande:read'])]
+    #[Groups(['commande:read', 'avis:read'])]
     private ?string $numero_commande = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
@@ -147,6 +147,11 @@ class Commande
     #[ORM\Column(nullable: true)]
     #[Groups(['commande:read'])]
     private ?\DateTime $ModifiedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?bool $avisDepose = null;
+
 
     public function __construct()
     {
@@ -362,6 +367,16 @@ class Commande
     {
         $this->ModifiedAt = $ModifiedAt;
 
+        return $this;
+    }
+    public function isAvisDepose(): ?bool
+    {
+        return $this->avisDepose;
+    }
+
+    public function setAvisDepose(?bool $avisDepose): static
+    {
+        $this->avisDepose = $avisDepose;
         return $this;
     }
 }
