@@ -22,7 +22,10 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 
  public function supports(Request $request): ?bool
 {
-    return $request->headers->has('Authorization');
+    $hasAuth = $request->headers->has('Authorization');
+    error_log("🔍 supports() appelé - Authorization présent: " . ($hasAuth ? 'OUI' : 'NON'));
+    error_log("🔍 Headers complets: " . json_encode($request->headers->all()));
+    return $hasAuth;
 }
 
 public function authenticate(Request $request): Passport
@@ -31,6 +34,7 @@ public function authenticate(Request $request): Passport
     error_log("🔍 Headers: " . json_encode($request->headers->all()));
     
     $authHeader = $request->headers->get('Authorization');
+    error_log("🔍 Authorization header reçu: " . ($authHeader ?? 'NULL'));
 
     if (null === $authHeader) {
         throw new CustomUserMessageAuthenticationException('No API token provided');
@@ -44,14 +48,22 @@ public function authenticate(Request $request): Passport
     $apiToken = substr($authHeader, 7); // Enlever "Bearer "
 
     return new SelfValidatingPassport(
-        new UserBadge($apiToken, function(string $token) {
-            $user = $this->userRepository->findOneBy(['apiToken' => $token]);
+    new UserBadge($apiToken, function(string $token) {
+        $user = $this->userRepository->findOneBy(['apiToken' => $token]);
 
-            if (!$user) {
-                throw new CustomUserMessageAuthenticationException('Invalid credentials.');
-            }
+        if (!$user) {
+            error_log("❌ Aucun user trouvé avec ce token");
+            throw new CustomUserMessageAuthenticationException('Invalid credentials.');
+        }
 
-            return $user;
+        error_log("✅ User trouvé: " . $user->getEmail() . " - Actif: " . ($user->isActif() ? 'OUI' : 'NON'));
+
+        if (!$user->isActif()) {
+            error_log("❌ User désactivé");
+            throw new CustomUserMessageAuthenticationException('Account disabled.');
+        }
+
+        return $user;
         })
     );
 }

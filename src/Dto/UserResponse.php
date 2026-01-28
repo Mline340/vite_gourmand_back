@@ -3,6 +3,7 @@
 namespace App\Dto;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Role;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\UserInfoProvider;
@@ -29,4 +30,5 @@ class UserResponse
     public ?string $adresse = null;
     public ?string $codeP = null;
     public ?string $ville = null;
+    public ?Role $role = null;
 }

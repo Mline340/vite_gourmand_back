@@ -46,6 +46,7 @@ class UserInfoProvider implements ProviderInterface
         $dto->adresse = $user->getAdresse() ?? null;
         $dto->codeP = $user->getCodeP() ?? null;
         $dto->ville = $user->getVille() ?? null;
+        $dto->role = $user->getRole();
     
         return $dto;
     }

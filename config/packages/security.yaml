@@ -43,6 +43,7 @@ security:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
         # Routes admin 
+        - { path: ^/api/employes/\d+/toggle, roles: ROLE_ADMIN } 
         - { path: ^/api/admin, roles: ROLE_ADMIN }  
         # Les utilisateurs connectés peuvent modifier/supprimer leur compte
         - { path: ^/api/users/\d+, roles: ROLE_USER, methods: [GET, PUT, DELETE] }

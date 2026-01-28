@@ -39,3 +39,6 @@ services:
         arguments:
             $emailFrom: '%env(EMAIL_FROM)%'
             $urlSite: '%env(URL_SITE)%'
+    
+    App\Security\UserChecker:
+        tags: [security.user_checker]

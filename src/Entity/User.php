@@ -130,6 +130,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:orders'])]
     private Collection $commandes;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $actif = true;
+
     public function __construct()
     {
         $this->apiToken = bin2hex(random_bytes(20));
@@ -394,6 +397,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $commande->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isActif(): ?bool
+    {
+        return $this->actif;
+    }
+
+    public function setActif(?bool $actif): static
+    {
+        $this->actif = $actif;
 
         return $this;
     }

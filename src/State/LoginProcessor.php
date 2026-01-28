@@ -42,6 +42,12 @@ final class LoginProcessor implements ProcessorInterface
                 Response::HTTP_UNAUTHORIZED
             );
         }
+        if (!$user->isActif()) {
+        return new JsonResponse(
+        ['error' => 'Votre compte a été désactivé. Contactez un administrateur.'], 
+        Response::HTTP_FORBIDDEN
+        );
+    }
 
         return new JsonResponse([
             'user' => $user->getUserIdentifier(),
