@@ -9,3 +9,8 @@
 
 controllers:
     resource: routing.controllers
+
+sync_commande_stats:
+    path: /api/admin/stats/synchroniser
+    methods: [POST]
+    controller: App\Controller\SyncStatsController

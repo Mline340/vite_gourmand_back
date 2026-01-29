@@ -32,6 +32,10 @@ services:
     App\State\LoginProcessor:
         tags:
             - { name: 'api_platform.state_processor' }
+    
+    App\State\CommandeStatsSyncProcessor:
+        tags:
+            - { name: 'api_platform.state_processor' }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

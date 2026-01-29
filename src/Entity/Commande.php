@@ -32,7 +32,6 @@ use Doctrine\ORM\Mapping as ORM;
             normalizationContext: ['groups' => ['commande:read']]
 
         ),
-        
         new Post(
             processor: CommandeProcessor::class,
             security: "is_granted('ROLE_USER')", 
