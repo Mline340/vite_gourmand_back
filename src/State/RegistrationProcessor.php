@@ -9,12 +9,16 @@ use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
 
 final class RegistrationProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $manager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private MailerInterface $mailer
     ) {}
 
     /**
@@ -48,6 +52,15 @@ final class RegistrationProcessor implements ProcessorInterface
         // Persiste l'utilisateur
         $this->manager->persist($user);
         $this->manager->flush();
+
+        // Envoi de l'email de bienvenue
+        $email = (new Email())
+            ->from('noreply@viteetgourmand.fr')
+            ->to($user->getEmail())
+            ->subject('Bienvenue sur notre site !')
+            ->html('<p>Bonjour ' . $user->getPrenom() . ',</p><p>Merci pour votre inscription !</p>');
+        
+        $this->mailer->send($email);
         
         return $user;
     }

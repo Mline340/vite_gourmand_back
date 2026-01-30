@@ -20,6 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Dto\CreateEmployeeInput;
 use App\State\CreateEmployeeProcessor;
 
@@ -62,6 +63,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     #[Groups(['user:read'])]
+    #[Assert\NotBlank(message: "L'email ne peut pas être vide")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
     private ?string $email = null;
 
     /**
