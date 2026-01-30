@@ -54,6 +54,19 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
         $this->calculerPrixCommande($data);
         $this->calculerPrixLivraison($data);
         $this->validerCommande($data);
+
+            // Sauvegarder d'abord pour avoir l'ID
+        $this->entityManager->persist($data);
+        $this->entityManager->flush();
+    
+        // Envoyer l'email de confirmation
+        try {
+            $this->envoyerEmailConfirmation($data);
+            error_log('✅ Email de confirmation envoyé');
+        } catch (\Exception $e) {
+            error_log('❌ Erreur envoi email confirmation: ' . $e->getMessage());
+        }
+    
         
     } else {
         // ===== MODIFICATION D'UNE COMMANDE EXISTANTE =====
@@ -78,21 +91,31 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
             $data->setModifiedAt($previousData->getModifiedAt());
         }
     }
-
-        $previousData = $context['previous_data'] ?? null;
-
         // VALIDER LA TRANSITION DE STATUT seulement si le statut change
         if ($previousData instanceof Commande) {
-            if ($previousData->getStatut() !== $data->getStatut()) {
-                $this->validerTransitionStatut($previousData, $data);
-            }
-            
-            if ($data->getNombrePersonne() !== $previousData->getNombrePersonne() ||
-                $data->getMenus()->count() !== $previousData->getMenus()->count()) {
-                $this->calculerPrixCommande($data);
-                $this->calculerPrixLivraison($data);
+    if ($previousData->getStatut() !== $data->getStatut()) {
+        $this->validerTransitionStatut($previousData, $data);
+        
+        // Déduire la quantité quand la commande est acceptée
+        if ($data->getStatut() === StatutCommande::ACCEPTE && 
+            $previousData->getStatut() !== StatutCommande::ACCEPTE) {
+            try {
+                $this->deduireQuantiteMenu($data);
+                error_log('✅ Quantité déduite lors de l\'acceptation de la commande');
+            } catch (\Exception $e) {
+                error_log('❌ Erreur déduction quantité: ' . $e->getMessage());
+                throw $e;
             }
         }
+    }
+    
+    // GARDEZ CE IF : recalcule si l'admin modifie le nombre de personnes ou les menus
+    if ($data->getNombrePersonne() !== $previousData->getNombrePersonne() ||
+        $data->getMenus()->count() !== $previousData->getMenus()->count()) {
+        $this->calculerPrixCommande($data);
+        $this->calculerPrixLivraison($data);
+    }
+}
         
         // Vérifier si passage à "Terminé" pour envoyer l'email
         $ancienStatut = $previousData?->getStatut();
@@ -111,10 +134,14 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
         }
     }
 
-    $this->entityManager->persist($data);
-    $this->entityManager->flush();
+            if (!$isCreation) {
+            $this->entityManager->persist($data);
+            error_log('💰 Prix liv JUSTE AVANT FLUSH: ' . $data->getPrixLiv());
+            $this->entityManager->flush();
+            error_log('💰 Prix liv JUSTE APRÈS FLUSH: ' . $data->getPrixLiv());
+        }
 
-    return $data;
+        return $data;
 }
 
     private function genererNumeroCommande(): string
@@ -125,34 +152,51 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
     }
 
     private function calculerPrixCommande(Commande $commande): void
-    {
-        $prixTotal = 0;
-        $nombrePersonnes = $commande->getNombrePersonne() ?? 1;
-
-        foreach ($commande->getMenus() as $menu) {
-            if ($menu instanceof Menu) {
-                $prixTotal += $menu->getPrixParPersonne() * $nombrePersonnes;
-            }
-        }
-
-        $commande->setPrixMenu($prixTotal);
+{
+    // PARTIE 1 : Si le front envoie le prix 
+    if ($commande->getPrixMenu() !== null && $commande->getPrixMenu() > 0) {
+        error_log('💰 Prix menu déjà fourni par le front: ' . $commande->getPrixMenu());
+        return; // On arrête ici, on ne recalcule rien
     }
+    
+    // PARTIE 2 : Sécurité - si le front n'a PAS envoyé le prix
+    error_log('⚠️ Prix menu non fourni, calcul automatique...');
+    $prixTotal = 0;
+    $nombrePersonnes = $commande->getNombrePersonne() ?? 1;
+
+    foreach ($commande->getMenus() as $menu) {
+        if ($menu instanceof Menu) {
+            $prixTotal += $menu->getPrixParPersonne() * $nombrePersonnes;
+        }
+    }
+
+    $commande->setPrixMenu($prixTotal);
+    error_log('💰 Prix calculé automatiquement (sans remise): ' . $prixTotal);
+}
 
     private function calculerPrixLivraison(Commande $commande): void
     {
-        $prixMenu = $commande->getPrixMenu();
-        
-        if ($prixMenu >= 100) {
-            $commande->setPrixLiv(0);
-        } else {
-            $commande->setPrixLiv(10.0);
-        }
-        
-        if ($commande->isPretMat()) {
-            $fraisMateriels = 15.0;
-            $commande->setPrixLiv($commande->getPrixLiv() + $fraisMateriels);
-        }
+          $prixLivFront = $commande->getPrixLiv();
+        error_log("🔍 Prix liv reçu: " . var_export($prixLivFront, true));
+    
+    // Si le front a déjà calculé un prix, on le garde
+    if ($prixLivFront !== null && $prixLivFront >= 0) {
+        $prixArrondi = round($prixLivFront, 2);
+        error_log("✅ Prix liv conservé: " . $prixArrondi);
+        $commande->setPrixLiv($prixArrondi);
+        return;
     }
+    
+    error_log("⚠️ Calcul fallback car prix_liv est null ou négatif");
+    // Sinon calcul par défaut (fallback)
+    $prixMenu = $commande->getPrixMenu();
+
+    if ($prixMenu >= 100) {
+        $commande->setPrixLiv(0);
+    } else {
+        $commande->setPrixLiv(10.0);
+    }
+}
 
     private function validerCommande(Commande $commande): void
     {
@@ -254,6 +298,87 @@ if ($nouveauStatut === StatutCommande::TERMINE) {
         $nouvelleCommande->setRetourMat(true);
     }
 }
+}
+    private function deduireQuantiteMenu(Commande $commande): void
+{
+    $nombrePersonnes = $commande->getNombrePersonne();
+    
+    foreach ($commande->getMenus() as $menu) {
+        if ($menu instanceof Menu) {
+            $quantiteActuelle = $menu->getQuantiteRestante();
+            $nouvelleQuantite = $quantiteActuelle - $nombrePersonnes;
+            
+            if ($nouvelleQuantite < 0) {
+                throw new BadRequestHttpException(
+                    sprintf('Stock insuffisant pour le menu "%s". Disponible: %d, Demandé: %d',
+                        $menu->getTitre(),
+                        $quantiteActuelle,
+                        $nombrePersonnes
+                    )
+                );
+            }
+            
+            $menu->setQuantiteRestante($nouvelleQuantite);
+            $this->entityManager->persist($menu);
+            
+            error_log(sprintf('📦 Menu "%s": %d → %d', 
+                $menu->getTitre(), 
+                $quantiteActuelle, 
+                $nouvelleQuantite
+            ));
+        }
+    }
+}
+
+
+    private function envoyerEmailConfirmation(Commande $commande): void
+{
+    error_log('🚀 Début envoyerEmailConfirmation');
+    
+    $client = $commande->getUser();
+    if (!$client || !$client->getEmail()) {
+        error_log('❌ Pas de client ou pas d\'email');
+        return;
+    }
+    
+    error_log('📧 Email client: ' . $client->getEmail());
+    
+    $datePrestation = $commande->getDatePrestation()->format('d/m/Y');
+    $heurePrestation = $commande->getHeureLiv()->format('H:i');
+    $totalCommande = $commande->getPrixMenu() + $commande->getPrixLiv();
+    
+    try {
+        $email = (new Email())
+            ->from($this->emailFrom)
+            ->to($client->getEmail())
+            ->subject('Confirmation de votre commande ' . $commande->getNumeroCommande())
+            ->html("
+                <h2>Bonjour {$client->getNom()},</h2>
+                <p>Nous avons bien reçu votre commande <strong>{$commande->getNumeroCommande()}</strong>.</p>
+                
+                <h3>Détails de votre commande :</h3>
+                <ul>
+                    <li>Date de prestation : {$datePrestation}</li>
+                    <li>Heure de livraison : {$heurePrestation}</li>
+                    <li>Nombre de personnes : {$commande->getNombrePersonne()}</li>
+                    <li>Prix menu : {$commande->getPrixMenu()} €</li>
+                    <li>Frais de livraison : {$commande->getPrixLiv()} €</li>
+                    <li><strong>Total : {$totalCommande} €</strong></li>
+                </ul>
+                
+                <p>Votre commande est actuellement en attente de validation.</p>
+                <p>Vous recevrez un email dès qu'elle sera acceptée.</p>
+                
+                <p>Merci de votre confiance !</p>
+                <p>L'équipe de Vite et Gourmand</p>
+            ");
+        
+        $this->mailer->send($email);
+        error_log('✅ Email de confirmation envoyé avec succès');
+    } catch (\Exception $e) {
+        error_log('❌ Erreur envoi email confirmation: ' . $e->getMessage());
+        throw $e;
+    }
 }
     
     private function envoyerEmailAvis(Commande $commande): void

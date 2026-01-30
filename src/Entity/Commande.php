@@ -78,7 +78,7 @@ class Commande
     private ?\DateTime $heure_liv = null;
 
     #[ORM\Column]
-    #[Groups(['commande:read'])]
+    #[Groups(['commande:read', 'commande:write'])]
     private ?float $prix_menu = null;
 
     #[ORM\Column(nullable: true)]
@@ -86,7 +86,7 @@ class Commande
     private ?int $nombre_personne = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['commande:read'])]
+    #[Groups(['commande:read',  'commande:write'])]
     private ?float $prix_liv = null;
 
     #[ORM\Column(length: 255, enumType: StatutCommande::class)]
