@@ -78,30 +78,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['user:read', 'commande:read', 'user:read:public'])]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['user:read', 'commande:read', 'user:read:public'])]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 255, nullable: true)] 
+    #[ORM\Column(length: 255)] 
     #[Groups(['user:read'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 10, max: 15)]
     private ?string $tel = null;
 
-    #[ORM\Column(length: 255, nullable: true)] 
+    #[ORM\Column(length: 255)] 
     #[Groups(['user:read'])]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire")]
     private ?string $adresse = null;
 
-    #[ORM\Column(length: 255, nullable: true)] 
+    #[ORM\Column(length: 255)] 
     #[Groups(['user:read'])]
+    #[Assert\NotBlank(message: "Le code postal est obligatoire")]
     private ?string $codeP = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     #[Groups(['user:read'])]
+    #[Assert\NotBlank(message: "La ville est obligatoire")]
     private ?string $ville = null;
 
     #[ORM\Column]

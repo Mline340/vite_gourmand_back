@@ -19,6 +19,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ApiResource(
@@ -71,26 +72,35 @@ class Commande
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Groups(['commande:read', 'commande:write'])]
+    #[Assert\NotBlank(message: "La date de prestation est obligatoire")]
     private ?\DateTime $date_prestation = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
     #[Groups(['commande:read', 'commande:write'])]
+    #[Assert\NotBlank(message: "L'heure de livraison est obligatoire")]
     private ?\DateTime $heure_liv = null;
 
     #[ORM\Column]
     #[Groups(['commande:read', 'commande:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Positive(message: "Le prix du menu doit être positif")]
     private ?float $prix_menu = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column]
     #[Groups(['commande:read', 'commande:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Positive(message: "Le nombre de personnes doit être positif")]
     private ?int $nombre_personne = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column]
     #[Groups(['commande:read',  'commande:write'])]
+    #[Assert\NotBlank]
+    #[Assert\PositiveOrZero(message: "Le prix de livraison doit être positif ou nul")]
     private ?float $prix_liv = null;
 
     #[ORM\Column(length: 255, enumType: StatutCommande::class)]
     #[Groups(['commande:read', 'commande:write'])]
+    #[Assert\NotBlank]
     #[ApiProperty(
      openapiContext: [
         'type' => 'string',
@@ -128,6 +138,7 @@ class Commande
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['commande:read', 'commande:write'])]
+    #[Assert\NotBlank(message: "L'utilisateur est obligatoire")]
     private ?User $user = null;
 
     #[ORM\Column(length: 20, nullable: true)]

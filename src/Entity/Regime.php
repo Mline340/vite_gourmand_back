@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RegimeRepository::class)]
 #[ApiResource(
@@ -28,6 +29,8 @@ class Regime
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\NotBlank(message: "Le libellé du régime est obligatoire")]
+    #[Assert\Length(max: 50)]
     #[Groups(['regime:read', 'menu:read'])]
     private ?string $libelle = null;
 

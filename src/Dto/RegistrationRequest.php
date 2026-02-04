@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Post(
             uriTemplate: '/registration',
-            processor: RegistrationProcessor::class,  // ✅ Plus de référence au controller
+            processor: RegistrationProcessor::class, 
             name: 'api_registration',
             inputFormats: ['json' => ['application/json']],
             normalizationContext: ['groups' => ['user:read']],
@@ -35,7 +35,7 @@ class RegistrationRequest
     public ?string $email = null;
 
     #[Assert\NotBlank(message: 'Le mot de passe est obligatoire')]
-    #[Assert\Length(min: 6, minMessage: 'Le mot de passe doit contenir au moins 6 caractères')]
+    #[Assert\Length(min: 10, minMessage: 'Le mot de passe doit contenir au moins 10 caractères')]
     public ?string $password = null;
 
     #[Assert\NotBlank(message: 'Le téléphone est obligatoire')]

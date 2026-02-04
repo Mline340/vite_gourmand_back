@@ -10,12 +10,16 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Security\LoginRateLimiter;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 final class LoginProcessor implements ProcessorInterface
 {
+    
     public function __construct(
         private EntityManagerInterface $em,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+          private LoginRateLimiter $rateLimiter
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): JsonResponse
@@ -24,6 +28,15 @@ final class LoginProcessor implements ProcessorInterface
             return new JsonResponse(
                 ['error' => 'Email and password required'], 
                 Response::HTTP_BAD_REQUEST
+            );
+        }
+
+         try {
+            $this->rateLimiter->check($data->email);
+        } catch (TooManyRequestsHttpException $e) {
+            return new JsonResponse(
+                ['error' => $e->getMessage()],
+                Response::HTTP_TOO_MANY_REQUESTS
             );
         }
 

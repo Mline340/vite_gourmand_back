@@ -19,6 +19,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Regime; 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MenuRepository::class)]
 #[ApiResource(
@@ -61,18 +62,24 @@ class Menu
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire")]
     #[Groups(['menu:read', 'menu:write', 'commande:read'])]
     private ?string $titre = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Positive(message: "Le nombre de personnes minimum doit être positif")]
     #[Groups(['menu:read', 'menu:write'])]
     private ?int $nombre_personne_mini = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Positive(message: "Le prix doit être positif")]
     #[Groups(['menu:read', 'menu:write'])]
     private ?float $prix_par_personne = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\Length(max: 1000)]
     #[Groups(['menu:read', 'menu:write'])]
     private ?string $description = null;
 
@@ -81,6 +88,7 @@ class Menu
     private ?int $quantite_restante = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(max: 2000)]
     #[Groups(['menu:read', 'menu:write'])]
     private ?string $conditions = null;
 
@@ -103,6 +111,7 @@ class Menu
      * @var Collection<int, Plat>
      */
     #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'menu', cascade: ['persist', 'remove'])]
+    #[Assert\Count(min: 1, minMessage: "Un menu doit contenir au moins un plat")]
     #[Groups(['menu:read'])]
     private Collection $plats;
 

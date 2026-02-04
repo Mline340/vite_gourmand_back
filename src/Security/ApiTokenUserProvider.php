@@ -25,9 +25,9 @@ class ApiTokenUserProvider implements UserProviderInterface
             throw new UserNotFoundException(sprintf('User with API token "%s" not found.', $identifier));
         }
 
-        if (!$user->isActif()) {
-        throw new UserNotFoundException('Compte désactivé');
-        }
+        //if (!$user->isActif()) {
+       // throw new UserNotFoundException('Compte désactivé');
+        //}
 
         return $user;
     }

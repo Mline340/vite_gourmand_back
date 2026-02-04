@@ -14,6 +14,7 @@ use App\Enum\StatutAvis;
 use ApiPlatform\Metadata\ApiProperty;
 use App\Repository\AvisRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AvisRepository::class)]
 #[ApiResource(
@@ -58,23 +59,34 @@ class Avis
 
     #[ORM\Column(nullable: true)]
     #[Groups(['avis:read', 'avis:write'])]
+    #[Assert\NotBlank(message: "La note est obligatoire")]
+    #[Assert\Range(
+    min: 1, 
+    max: 5, 
+    notInRangeMessage: "La note doit être entre {{ min }} et {{ max }}"
+    )]
     private ?int $note = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 500, maxMessage: "La description ne peut pas dépasser {{ limit }} caractères")]
     #[Groups(['avis:read', 'avis:write'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['En attente', 'Validé', 'Rejeté'])]
     #[Groups(['avis:read', 'avis:admin'])]
     private ?string $statut = null;
 
     #[ORM\ManyToOne(inversedBy: 'avis')]
+    #[Assert\NotBlank]
     #[Groups(['avis:read', 'avis:write'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
    #[ORM\ManyToOne]
    #[ORM\JoinColumn(nullable: false)]
+   #[Assert\NotBlank]
    #[Groups(['avis:read', 'avis:write'])]
    #[ApiProperty(readableLink: true)]
    private ?Commande $commande = null;
