@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\Patch;
-use App\State\MesAvisProcessor;
+use App\State\AvisProvider;
 use App\State\MesAvisProvider;
 use App\Enum\StatutAvis;
 use ApiPlatform\Metadata\ApiProperty;
@@ -27,7 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         uriTemplate: '/avis/valides',
         security: "true",
         normalizationContext: ['groups' => ['avis:read', 'user:read:public']],
-        filters: ['avis.statut_filter']
+        provider: AvisProvider::class 
         ),
         new GetCollection(
             uriTemplate: '/avis/mes-avis',
@@ -37,7 +37,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new GetCollection(
             security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_EMPLOYE')",
-            normalizationContext: ['groups' => ['avis:read', 'user:read']]
+            normalizationContext: ['groups' => ['avis:read', 'user:read']],
+            provider: AvisProvider::class
         ),
         new Get(
             security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_EMPLOYE')",
@@ -76,7 +77,7 @@ class Avis
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['En attente', 'Validé', 'Rejeté'])]
     #[Groups(['avis:read', 'avis:admin'])]
-    private ?string $statut = null;
+    private ?string $statut = 'En attente';
 
     #[ORM\ManyToOne(inversedBy: 'avis')]
     #[Assert\NotBlank]

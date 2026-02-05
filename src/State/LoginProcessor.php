@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Dto\LoginRequest;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface; 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -19,7 +20,8 @@ final class LoginProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $em,
         private UserPasswordHasherInterface $passwordHasher,
-          private LoginRateLimiter $rateLimiter
+        private LoginRateLimiter $rateLimiter,
+        private LoggerInterface $logger
     ) {}
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): JsonResponse
@@ -56,12 +58,26 @@ final class LoginProcessor implements ProcessorInterface
             );
         }
         if (!$user->isActif()) {
+            $this->logger->warning('Connexion refusée - compte désactivé', [
+                'email' => $data->email,
+                'userId' => $user->getId()
+            ]);
         return new JsonResponse(
         ['error' => 'Votre compte a été désactivé. Contactez un administrateur.'], 
         Response::HTTP_FORBIDDEN
         );
     }
 
+                // Reset après succès
+        $this->rateLimiter->reset($data->email);
+
+        // ← AJOUTE ce log (succès)
+        $this->logger->info('Connexion réussie', [
+            'userId' => $user->getId(),
+            'email' => $user->getUserIdentifier(),
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+        ]);
+        
         return new JsonResponse([
             'user' => $user->getUserIdentifier(),
             'apiToken' => $user->getApiToken(),

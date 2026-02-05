@@ -14,6 +14,8 @@ use App\Dto\RegistrationRequest;
 use App\Entity\User;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use ApiPlatform\Metadata\Post;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+
 
 
 #[AsController]
@@ -35,6 +37,4 @@ final class SecurityController extends AbstractController
         
         return new JsonResponse(['message' => 'Inscription réussie'], 201);
     }
-
-
 }

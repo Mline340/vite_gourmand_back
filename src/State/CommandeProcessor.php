@@ -283,6 +283,7 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
             'Le statut "En attente du retour de matériel" ne peut être appliqué que si du matériel a été prêté.'
         );
     }
+    $this->envoyerEmailRetourMateriel($nouvelleCommande);
 }
 
 if ($nouveauStatut === StatutCommande::TERMINE) {
@@ -329,7 +330,37 @@ if ($nouveauStatut === StatutCommande::TERMINE) {
         }
     }
 }
-
+private function envoyerEmailRetourMateriel(Commande $commande): void
+{
+    error_log('🚀 Début envoyerEmailRetourMateriel');
+    
+    $client = $commande->getUser();
+    if (!$client || !$client->getEmail()) {
+        error_log('❌ Pas de client ou pas d\'email');
+        return;
+    }
+    
+    error_log('📧 Email client: ' . $client->getEmail());
+    
+    try {
+        $email = (new Email())
+            ->from($this->emailFrom)
+            ->to($client->getEmail())
+            ->subject('Retour du matériel - Commande ' . $commande->getNumeroCommande())
+            ->html("
+                <h2>Bonjour,</h2>
+                <p>Suite à la livraison de votre commande, nous vous avons mis à disposition du matériel.</p>
+                <p>Vous avez 10 jours ouvrés pour nous le restituer, sinon nous n'aurons pas le choix que de vous acquitter d'une caution de 600€.</p>
+                <p>Merci de votre compréhension.</p>
+                <p>L'équipe de Vite et Gourmand</p>
+            ");
+        
+        $this->mailer->send($email);
+        error_log('✅ Email retour matériel envoyé avec succès');
+    } catch (\Exception $e) {
+        error_log('❌ Erreur envoi email retour matériel: ' . $e->getMessage());
+    }
+}
 
     private function envoyerEmailConfirmation(Commande $commande): void
 {
@@ -353,7 +384,7 @@ if ($nouveauStatut === StatutCommande::TERMINE) {
             ->to($client->getEmail())
             ->subject('Confirmation de votre commande ' . $commande->getNumeroCommande())
             ->html("
-                <h2>Bonjour {$client->getNom()},</h2>
+                <h2>Bonjour,</h2>
                 <p>Nous avons bien reçu votre commande <strong>{$commande->getNumeroCommande()}</strong>.</p>
                 
                 <h3>Détails de votre commande :</h3>
@@ -402,7 +433,7 @@ if ($nouveauStatut === StatutCommande::TERMINE) {
             ->to($client->getEmail())
             ->subject('Votre commande est terminée - Donnez votre avis')
             ->html("
-                <h2>Bonjour {$client->getNom()},</h2>
+                <h2>Bonjour},</h2>
                 <p>Votre commande a été livrée et terminée avec succès !</p>
                 <p>Vous pouvez-maintenant vous rendre sur notre site afin de nous donner votre avis.</p>
                 <p>Merci de votre confiance !</p>

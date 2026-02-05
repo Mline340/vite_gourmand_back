@@ -22,18 +22,23 @@ security:
         api_docs:
             pattern: ^/api/(docs|contexts|\.well-known)
             security: false
-        main:
+        login:
+            pattern: ^/api/login$
+            stateless: true
+            security: false 
             lazy: true
             provider: app_user_provider
-            # Choisir selon votre besoin :
+            
+        main:
+            pattern: ^/api
+            stateless: true
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\ApiTokenAuthenticator
+            # Choisir selon le besoin :
             # stateless: true   # Pour API pure (JWT, tokens)
             # stateless: false  # Pour garder les sessions
-            stateless: true
-            json_login:
-                check_path: app_api_login
-                username_path: email       
-                password_path: password
-            custom_authenticator: App\Security\ApiTokenAuthenticator
+
 
     # Note: Only the *first* matching rule is applied
     access_control:

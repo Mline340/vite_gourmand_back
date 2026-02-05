@@ -53,4 +53,4 @@ services:
 
     App\Security\LoginRateLimiter:
         arguments:
-            $requestStack: '@request_stack'
+            $projectDir: '%kernel.project_dir%'
