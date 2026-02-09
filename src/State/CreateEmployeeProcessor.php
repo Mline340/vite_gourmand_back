@@ -7,14 +7,17 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Dto\CreateEmployeeInput;
 use App\Entity\User;
+use Symfony\Component\Mailer\MailerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Mime\Email;
 
 class CreateEmployeeProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private MailerInterface $mailer,
     ) {
     }
 
@@ -42,6 +45,15 @@ class CreateEmployeeProcessor implements ProcessorInterface
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return $user;
-    }
+       // Envoie d l'email nouvel employé
+        $email = (new Email())
+            ->from('noreply@viteetgourmand.fr')
+            ->to($user->getEmail())
+            ->subject('Bienvenue dans l\'équipe!')
+            ->html('<p>Bonjour ' . $user->getPrenom() . ',</p><p>Vous pouvez maintenant accéder à votre espace en ligne.</p>');
+
+        $this->mailer->send($email);
+
+            return $user;
+        }
 }

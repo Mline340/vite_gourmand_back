@@ -16,11 +16,21 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: HoraireRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(security: "is_granted('PUBLIC_ACCESS')"),
-        new Get(security: "is_granted('PUBLIC_ACCESS')"),
-        new Post(security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"),
-        new Delete(security: "is_granted('ROLE_ADMIN')")
+        new GetCollection(
+            security: "is_granted('PUBLIC_ACCESS')"
+        ),
+        new Get(
+            security: "is_granted('PUBLIC_ACCESS')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_EMPLOYE') or is_granted('ROLE_ADMIN')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')"
+        )
     ],
     normalizationContext: ['groups' => ['horaire:read']],
     denormalizationContext: ['groups' => ['horaire:write']]
