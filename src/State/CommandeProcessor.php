@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use App\Service\CommandeStatsService;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -21,7 +22,8 @@ class CommandeProcessor implements ProcessorInterface
         private Security $security,
         private MailerInterface $mailer,
         private string $emailFrom,
-        private string $urlSite
+        private string $urlSite,
+        private CommandeStatsService $statsService
     ) {}
 
 public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
@@ -58,11 +60,19 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
             // Sauvegarder d'abord pour avoir l'ID
         $this->entityManager->persist($data);
         $this->entityManager->flush();
-    
+
+        //  SYNC MONGODB
+        try {
+            $this->statsService->synchroniserStats();
+            error_log('✅ Stats synchronisées dans MongoDB');
+        } catch (\Exception $e) {
+            error_log('❌ Erreur sync stats: ' . $e->getMessage());
+        }
+
         // Envoyer l'email de confirmation
         try {
             $this->envoyerEmailConfirmation($data);
-            error_log('✅ Email de confirmation envoyé');
+            error_log('Email de confirmation envoyé');
         } catch (\Exception $e) {
             error_log('❌ Erreur envoi email confirmation: ' . $e->getMessage());
         }
@@ -433,7 +443,7 @@ private function envoyerEmailRetourMateriel(Commande $commande): void
             ->to($client->getEmail())
             ->subject('Votre commande est terminée - Donnez votre avis')
             ->html("
-                <h2>Bonjour},</h2>
+                <h2>Bonjour,</h2>
                 <p>Votre commande a été livrée et terminée avec succès !</p>
                 <p>Vous pouvez-maintenant vous rendre sur notre site afin de nous donner votre avis.</p>
                 <p>Merci de votre confiance !</p>

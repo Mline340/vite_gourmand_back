@@ -2,6 +2,7 @@
 namespace App\Service;
 
 use MongoDB\Client;
+use App\Entity\Commande;
 
 class MongoDBService
 {
@@ -23,4 +24,5 @@ class MongoDBService
     {
         return $this->database;
     }
+    
 }
