@@ -1,8 +1,8 @@
 # Vite & Gourmand 
 Site vitrine 
-- (Trello)(https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand).
-- [![Trello](https://img.shields.io/badge/Trello-%23026AA7.svg?style=for-the-badge&logo=Trello&logoColor=white)](https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand).
-- (Mailtrap)(https://mailtrap.io/)
+
+- ![Trello](https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand).
+- ![Mailtrap](https://mailtrap.io/).
 
 # Présentation du projet
 
@@ -103,12 +103,12 @@ symfony new vite_gourmand_back --version=7.4
 
 ## Installation des dépendances :
 
-- Doctrine : $ composer require symfony/orm-pack 
-- Sécurité : $ composer require symfony/security-bundle
-- API REST : $ composer require api-platform/core
-- CROS : $ composer require nelmio/cors-bundle
-- Doc API :  $ composer require zircote/swagger-php
-- Fixtures : $ composer require --dev orm-fixtures
+- Doctrine : 'composer require symfony/orm-pack'
+- Sécurité : 'composer require symfony/security-bundle'
+- API REST : 'composer require api-platform/core'
+- CROS :  'composer require nelmio/cors-bundle'
+- Doc API :   'composer require zircote/swagger-php'
+- Fixtures :  'composer require --dev orm-fixtures'
  
 
 ## Configuration de la base de données : 
@@ -130,7 +130,7 @@ Démarer le serveur Symfony :
 # Installations du projet côté Front-end 
 
 Installation des dépendances :
-$ npm install
+ 'npm install'
 
 Ouvrir l'application :
 - PHP Server
@@ -144,15 +144,18 @@ Import des fichiers SQL depuis Adminer :
 
 Exemple de requêt SQL : 
 - Retrouver toutes les commandes rattachées à un utilisateur :
-$ SELECT * FROM commande WHERE user_id = 11;
+ 'SELECT * FROM commande WHERE user_id = 11;'
 
 - Calculer le prix par personne : 
-$ SELECT (prix_menu / nombre_personne) as total 
+'SELECT (prix_menu / nombre_personne) as total 
 FROM commande 
-WHERE id = 1;
+WHERE id = 1;'
 
 - Calculer le nombre de menu commander 
-$ SELECT (menu_id),
+'SELECT (menu_id),
     COUNT(commande_id)
 FROM commande_menu
-GROUP BY menu_id;
+GROUP BY menu_id;'
+
+# Manuel d'utilisation 
+[Manuel d'utilisation](PDF/Manuel-d'utilisation.pdf).
