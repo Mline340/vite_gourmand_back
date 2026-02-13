@@ -79,6 +79,7 @@ J'ai séparé le front-end (HTML/CSS/JS) du back-end (Symfony) avec une API REST
 - npm en ligne de commande  $ npm install -g npm
 - Composer : https://getcomposer.org/download/
 - Symfony CLI : https://symfony.com/download
+- Docker : 
 
 # Création et connexion des repositories Github 
 
@@ -103,12 +104,30 @@ symfony new vite_gourmand_back --version=7.4
 
 ## Installation des dépendances :
 
-- Doctrine : 'composer require symfony/orm-pack'
-- Sécurité : 'composer require symfony/security-bundle'
-- API REST : 'composer require api-platform/core'
-- CROS :  'composer require nelmio/cors-bundle'
-- Doc API :   'composer require zircote/swagger-php'
-- Fixtures :  'composer require --dev orm-fixtures'
+- Doctrine : 
+```bash
+composer require symfony/orm-pack
+```
+- Sécurité : 
+```bash
+composer require symfony/security-bundle
+```
+- API REST : 
+```bash
+composer require api-platform/core
+```
+- CROS :  
+```bash
+composer require nelmio/cors-bundle
+```
+- Doc API :   
+```bash
+composer require zircote/swagger-php
+```
+- Fixtures :  
+```bash
+composer require --dev orm-fixtures
+```
  
 
 ## Configuration de la base de données : 
@@ -117,10 +136,14 @@ Création du fichier .env.local
    DATABASE_URL="mysql://root:*******@127.0.0.1:3306/bdd?serverVersion=10.4.32-MariaDB&charset=utf8mb4"
 
 Création de la base de données : 
+    ```bash
     php bin/console doctrine:database:create
+    ```
 
 Exécuter les migrations :
+    ```bash
     php bin/console doctrine:migrations:migrate
+    ```
 
 ## Lancement du serveur : 
 Démarer le serveur Symfony : 
@@ -130,7 +153,9 @@ Démarer le serveur Symfony :
 # Installations du projet côté Front-end 
 
 Installation des dépendances :
- 'npm install'
+ ```bash
+ npm install
+ ```
 
 Ouvrir l'application :
 - PHP Server
@@ -159,3 +184,9 @@ GROUP BY menu_id;'
 
 # Manuel d'utilisation 
 [Manuel d'utilisation](PDF/Manuel-d'utilisation.pdf).
+
+# Charte 
+[Charte graphique](PDF/Charte-graphique.pdf).
+
+# Gestion de projet 
+[Gestion de projet](PDF/Gestion-de-projet.pdf).
