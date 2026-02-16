@@ -6,15 +6,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
-class SyncStatsController extends AbstractController
+class AdminStatsController extends AbstractController
 {
     public function __construct(private CommandeStatsService $statsService)
     {
     }
 
-    #[Route('/api/admin/stats/sync', name: 'api_sync_stats', methods: ['POST'])]
+    #[Route('/api/admin/stats/sync', name: 'admin_stats_sync', methods: ['POST'])]
     public function sync(): JsonResponse
     {
+        // Vérifier que l'utilisateur est admin
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
         try {
@@ -22,12 +23,12 @@ class SyncStatsController extends AbstractController
             
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Statistiques synchronisées ✅'
+                'message' => 'Statistiques synchronisées avec succès'
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Erreur : ' . $e->getMessage()
             ], 500);
         }
     }

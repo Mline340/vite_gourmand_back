@@ -80,7 +80,7 @@ class Commande
     #[Assert\NotBlank(message: "L'heure de livraison est obligatoire")]
     private ?\DateTime $heure_liv = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'float')]
     #[Groups(['commande:read', 'commande:write'])]
     #[Assert\NotBlank]
     #[Assert\Positive(message: "Le prix du menu doit être positif")]

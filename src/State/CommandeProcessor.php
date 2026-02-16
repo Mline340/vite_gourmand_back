@@ -56,18 +56,11 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
         $this->calculerPrixCommande($data);
         $this->calculerPrixLivraison($data);
         $this->validerCommande($data);
+        $this->validerQuantiteDisponible($data);
 
             // Sauvegarder d'abord pour avoir l'ID
         $this->entityManager->persist($data);
         $this->entityManager->flush();
-
-        //  SYNC MONGODB
-        try {
-            $this->statsService->synchroniserStats();
-            error_log('✅ Stats synchronisées dans MongoDB');
-        } catch (\Exception $e) {
-            error_log('❌ Erreur sync stats: ' . $e->getMessage());
-        }
 
         // Envoyer l'email de confirmation
         try {
@@ -78,80 +71,86 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
         }
     
         
-    } else {
-        // ===== MODIFICATION D'UNE COMMANDE EXISTANTE =====
-        
-        if (!$this->security->isGranted('ROLE_ADMIN') && 
-            !$this->security->isGranted('ROLE_EMPLOYE') &&
-            $data->getUser() !== $user) {
-            throw new AccessDeniedHttpException('Vous n\'avez pas le droit de modifier cette commande.');
-        }
-        
-        // Enregistrer qui a modifié et quand
-        $data->setModifiedBy($user);
-        $data->setModifiedAt(new \DateTime());
-        
-        // Ne pas écraser modifiedBy et modifiedAt si c'est juste un dépôt d'avis
-    if ($context['previous_data'] ?? null) {
-        $previousData = $context['previous_data'];
+} else {
+    // ===== MODIFICATION D'UNE COMMANDE EXISTANTE =====  
+    $previousData = $context['previous_data'] ?? null;
+    
+    if ($previousData) {
+        error_log('🔍 previous_data type: ' . get_class($previousData));
+    }
+    
+    if (!$this->security->isGranted('ROLE_ADMIN') && 
+        !$this->security->isGranted('ROLE_EMPLOYE') &&
+        $data->getUser() !== $user) {
+        throw new AccessDeniedHttpException('Vous n\'avez pas le droit de modifier cette commande.');
+    }
+    
+    // Enregistrer qui a modifié et quand
+    $data->setModifiedBy($user);
+    $data->setModifiedAt(new \DateTime());
+    
+    // Ne pas écraser modifiedBy et modifiedAt si c'est juste un dépôt d'avis
+    if ($previousData && $previousData instanceof Commande) {
         if ($data->isAvisDepose() !== $previousData->isAvisDepose() && 
             $data->getStatut() === $previousData->getStatut()) {
-            // C'est juste un dépôt d'avis, ne pas modifier modifiedBy/At
+            // C'est juste un dépôt d'avis
             $data->setModifiedBy($previousData->getModifiedBy());
             $data->setModifiedAt($previousData->getModifiedAt());
         }
     }
-        // VALIDER LA TRANSITION DE STATUT seulement si le statut change
-        if ($previousData instanceof Commande) {
-    if ($previousData->getStatut() !== $data->getStatut()) {
-        $this->validerTransitionStatut($previousData, $data);
-        
-        // Déduire la quantité quand la commande est acceptée
-        if ($data->getStatut() === StatutCommande::ACCEPTE && 
-            $previousData->getStatut() !== StatutCommande::ACCEPTE) {
-            try {
-                $this->deduireQuantiteMenu($data);
-                error_log('✅ Quantité déduite lors de l\'acceptation de la commande');
-            } catch (\Exception $e) {
-                error_log('❌ Erreur déduction quantité: ' . $e->getMessage());
-                throw $e;
+    
+    // VALIDER LA TRANSITION DE STATUT seulement si le statut change
+    if ($previousData instanceof Commande) {
+        if ($previousData->getStatut() !== $data->getStatut()) {
+            $this->validerTransitionStatut($previousData, $data);
+            
+            // Déduire la quantité quand la commande est acceptée
+            if ($data->getStatut() === StatutCommande::ACCEPTE && 
+                $previousData->getStatut() !== StatutCommande::ACCEPTE) {
+                try {
+                    $this->deduireQuantiteMenu($data);
+                    error_log('✅ Quantité déduite lors de l\'acceptation de la commande');
+                } catch (\Exception $e) {
+                    error_log('❌ Erreur déduction quantité: ' . $e->getMessage());
+                    throw $e;
+                }
             }
+        }
+        
+        // Recalcule si l'admin modifie le nombre de personnes ou les menus
+        if ($data->getNombrePersonne() !== $previousData->getNombrePersonne() ||
+            $data->getMenus()->count() !== $previousData->getMenus()->count()) {
+            $this->calculerPrixCommande($data);
+            $this->calculerPrixLivraison($data);
         }
     }
     
-    // GARDEZ CE IF : recalcule si l'admin modifie le nombre de personnes ou les menus
-    if ($data->getNombrePersonne() !== $previousData->getNombrePersonne() ||
-        $data->getMenus()->count() !== $previousData->getMenus()->count()) {
-        $this->calculerPrixCommande($data);
-        $this->calculerPrixLivraison($data);
+    // Vérifier si passage à "Terminé" pour envoyer l'email
+    $ancienStatut = $previousData?->getStatut();
+
+    if ($data->getStatut() === StatutCommande::TERMINE && $ancienStatut !== StatutCommande::TERMINE) {
+        error_log('📬 Envoi email déclenché');    
+        try {
+            $this->envoyerEmailAvis($data);
+            error_log('✅ Email envoyé avec succès');
+        } catch (\Exception $e) {
+            error_log('❌ Erreur envoi email: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+        }
     }
+
+    
 }
-        
-        // Vérifier si passage à "Terminé" pour envoyer l'email
-        $ancienStatut = $previousData?->getStatut();
-        error_log('🔍 Ancien statut: ' . ($ancienStatut ? $ancienStatut->value : 'null'));
-        error_log('🔍 Nouveau statut: ' . $data->getStatut()->value);
 
-       if ($data->getStatut() === StatutCommande::TERMINE && $ancienStatut !== StatutCommande::TERMINE) {
-            error_log('📬 Envoi email déclenché');    
-            try {
-                $this->envoyerEmailAvis($data);
-                error_log('✅ Email envoyé avec succès');
-            } catch (\Exception $e) {
-                error_log('❌ Erreur envoi email: ' . $e->getMessage());
-                error_log('Stack trace: ' . $e->getTraceAsString());
-            }
-        }
-    }
+if (!$isCreation) {
+    $this->entityManager->persist($data);
+    error_log('💰 Prix liv JUSTE AVANT FLUSH: ' . $data->getPrixLiv());
+    $this->entityManager->flush();
+    error_log('💰 Prix liv JUSTE APRÈS FLUSH: ' . $data->getPrixLiv());
 
-            if (!$isCreation) {
-            $this->entityManager->persist($data);
-            error_log('💰 Prix liv JUSTE AVANT FLUSH: ' . $data->getPrixLiv());
-            $this->entityManager->flush();
-            error_log('💰 Prix liv JUSTE APRÈS FLUSH: ' . $data->getPrixLiv());
-        }
+}
 
-        return $data;
+return $data;
 }
 
     private function genererNumeroCommande(): string
@@ -259,6 +258,27 @@ public function process(mixed $data, Operation $operation, array $uriVariables =
             throw new BadRequestHttpException('L\'heure de livraison doit être entre 8h00 et 20h00.');
         }
     }
+private function validerQuantiteDisponible(Commande $commande): void
+{
+    $nombrePersonnes = $commande->getNombrePersonne();
+    
+    foreach ($commande->getMenus() as $menu) {
+        if ($menu instanceof Menu) {
+            $quantiteRestante = $menu->getQuantiteRestante();
+            
+            if ($nombrePersonnes > $quantiteRestante) {
+                throw new BadRequestHttpException(
+                    sprintf(
+                        'Stock insuffisant pour le menu "%s". Disponible : %d portion(s), Demandé : %d personne(s)',
+                        $menu->getTitre(),
+                        $quantiteRestante,
+                        $nombrePersonnes
+                    )
+                );
+            }
+        }
+    }
+}
 
  private function validerTransitionStatut(?Commande $ancienneCommande, Commande $nouvelleCommande): void
 {

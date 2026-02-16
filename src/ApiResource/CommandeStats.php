@@ -4,6 +4,8 @@ namespace App\ApiResource;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\State\CommandeStatsProvider;
+use ApiPlatform\Metadata\Post;
+use App\Controller\SyncStatsController;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(

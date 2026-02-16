@@ -29,23 +29,25 @@ class CommandeStatsService
     // Compte les commandes par menu
     $stats = [];
     foreach ($commandes as $commande) {
+        
+        $prixCommande = (float) $commande->getPrixMenu();
+        
         foreach ($commande->getMenus() as $menu) {
             $menuId = $menu->getId();
-             $nombrePersonnes = $commande->getNombrePersonne() ?? 1;
-            $prixMenu = $menu->getPrixParPersonne() * $nombrePersonnes;
+            
             if (!isset($stats[$menuId])) {
                 $stats[$menuId] = [
                     'menu_id' => $menuId,
                     'menu_titre' => $menu->getTitre(),
                     'total_commandes' => 0,
-                    'prix_par_personne' => $menu->getPrixParPersonne(),
-                    'chiffre_affaires' => 0
+                    'prix_par_personne' => (float) $menu->getPrixParPersonne(),
+                    'chiffre_affaires' => 0.0
                 ];
             }
+             if ($commande->getStatut() && $commande->getStatut()->value === 'Terminé') {
             $stats[$menuId]['total_commandes']++;
-            if ($commande->getStatut() && $commande->getStatut()->value === 'Terminé') {
-            $stats[$menuId]['chiffre_affaires'] += $prixMenu;
-}
+            $stats[$menuId]['chiffre_affaires'] = (float) ($stats[$menuId]['chiffre_affaires'] + $prixCommande);
+            }
         }
     }
     
@@ -57,8 +59,8 @@ class CommandeStatsService
             'menu_id' => $stat['menu_id'],
             'menu_titre' => $stat['menu_titre'],
             'total_commandes' => $stat['total_commandes'],
-            'prix_par_personne' => $stat['prix_par_personne'],
-            'chiffre_affaires' => $stat['chiffre_affaires']
+            'prix_par_personne' => (float) $stat['prix_par_personne'],
+            'chiffre_affaires' => (float) $stat['chiffre_affaires'] 
             
         ]);
         }
