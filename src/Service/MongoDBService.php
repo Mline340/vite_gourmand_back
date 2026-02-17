@@ -2,17 +2,16 @@
 namespace App\Service;
 
 use MongoDB\Client;
-use App\Entity\Commande;
 
 class MongoDBService
 {
     private $client;
     private $database;
 
-    public function __construct()
+    public function __construct(string $mongodbUrl, string $mongodbDb)
     {
-        $this->client = new Client("mongodb://localhost:27017");
-        $this->database = $this->client->restaurant;
+        $this->client = new Client($mongodbUrl);
+        $this->database = $this->client->selectDatabase($mongodbDb);
     }
 
     public function getCollection(string $name)
@@ -24,5 +23,4 @@ class MongoDBService
     {
         return $this->database;
     }
-    
 }
