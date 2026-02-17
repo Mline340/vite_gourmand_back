@@ -1,8 +1,8 @@
 # Vite & Gourmand 
 Site vitrine 
 
-- ![Trello](https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand).
-- ![Mailtrap](https://mailtrap.io/).
+- [Trello](https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand).
+- [Mailtrap](https://mailtrap.io/).
 
 # Présentation du projet
 
