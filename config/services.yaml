@@ -54,3 +54,8 @@ services:
     App\Security\LoginRateLimiter:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Service\MongoDBService:
+        arguments:
+            $mongodbUrl: '%env(MONGODB_URL)%'
+            $mongodbDb: '%env(MONGODB_DB)%'
