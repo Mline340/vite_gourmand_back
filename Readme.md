@@ -79,7 +79,7 @@ J'ai séparé le front-end (HTML/CSS/JS) du back-end (Symfony) avec une API REST
 - npm en ligne de commande  $ npm install -g npm
 - Composer : https://getcomposer.org/download/
 - Symfony CLI : https://symfony.com/download
-- Docker : 
+- Docker : https://www.docker.com/products/docker-desktop
 
 # Création et connexion des repositories Github 
 
@@ -183,7 +183,7 @@ FROM commande_menu
 GROUP BY menu_id;'
 
 # Manuel d'utilisation 
-[Manuel d'utilisation](PDF/Manuel-d'utilisation.pdf).
+[Manuel d'utilisation](PDF/Manuel-d-utilisation.pdf).
 
 # Charte 
 [Charte graphique](PDF/Charte-graphique.pdf).
