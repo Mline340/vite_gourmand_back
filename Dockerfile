@@ -28,6 +28,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
+COPY . .
+
 RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
     --no-dev \
     --optimize-autoloader \
@@ -35,7 +37,9 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
     --ignore-platform-reqs \
     --no-interaction
 
-COPY . .
+RUN php bin/console importmap:install \
+    && php bin/console asset-map:compile \
+    && php bin/console cache:clear --env=prod
 
 RUN chown -R www-data:www-data /var/www/html
 
