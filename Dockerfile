@@ -30,7 +30,7 @@ WORKDIR /var/www/html/
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Force l'installation même si des scripts échouent
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# ON MODIFIE CETTE LIGNE (Ajout de --ignore-platform-reqs)
+RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
 
 RUN chown -R www-data:www-data /var/www/html
