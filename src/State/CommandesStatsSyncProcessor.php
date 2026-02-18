@@ -5,7 +5,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Service\CommandeStatsService;
 
-class CommandeStatsSyncProcessor implements ProcessorInterface
+class CommandesStatsSyncProcessor implements ProcessorInterface
 {
     public function __construct(private CommandeStatsService $statsService) {}
 
