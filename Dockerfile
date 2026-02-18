@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     unzip \
     git \
+    default-mysql-client \
     && docker-php-ext-configure gd --with-jpeg \
     && docker-php-ext-install intl pdo pdo_mysql zip opcache gd mbstring \
     && pecl install mongodb \
