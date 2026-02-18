@@ -38,3 +38,5 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
 COPY . .
 
 RUN chown -R www-data:www-data /var/www/html
+
+CMD ["apache2-foreground"]
