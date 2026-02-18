@@ -1,8 +1,8 @@
 # Vite & Gourmand 
 Site vitrine 
 
-- [Trello](https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand).
-- [Mailtrap](https://mailtrap.io/).
+[Trello](https://trello.com/b/P9JLcw4y/projet-studi-vite-et-gourmand)
+[Mailtrap](https://mailtrap.io/signin)
 
 # Présentation du projet
 
@@ -76,10 +76,11 @@ J'ai séparé le front-end (HTML/CSS/JS) du back-end (Symfony) avec une API REST
 - XAMPP 3.3.0 : https://www.apachefriends.org
 - Git : https://git-scm.com/install/windows
 - Node.js : https://nodejs.org/fr/download
-- npm en ligne de commande  $ npm install -g npm
+- npm en ligne de commande   npm install -g npm
 - Composer : https://getcomposer.org/download/
 - Symfony CLI : https://symfony.com/download
 - Docker : https://www.docker.com/products/docker-desktop
+- Postman : 
 
 # Création et connexion des repositories Github 
 
@@ -185,7 +186,7 @@ GROUP BY menu_id;'
 # Manuel d'utilisation 
 [Manuel d'utilisation](PDF/Manuel-d-utilisation.pdf).
 
-# Charte 
+# Charte Graphique
 [Charte graphique](PDF/Charte-graphique.pdf).
 
 # Gestion de projet 
