@@ -37,6 +37,8 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
     --ignore-platform-reqs \
     --no-interaction
 
+ENV APP_ENV=prod
+
 RUN php bin/console importmap:install \
     && php bin/console asset-map:compile \
     && php bin/console cache:clear --env=prod
