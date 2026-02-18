@@ -80,7 +80,7 @@ J'ai séparé le front-end (HTML/CSS/JS) du back-end (Symfony) avec une API REST
 - Composer : https://getcomposer.org/download/
 - Symfony CLI : https://symfony.com/download
 - Docker : https://www.docker.com/products/docker-desktop
-- Postman : 
+- Postman : https://www.postman.com/downloads/
 
 # Création et connexion des repositories Github 
 
@@ -191,3 +191,10 @@ GROUP BY menu_id;'
 
 # Gestion de projet 
 [Gestion de projet](PDF/Gestion-de-projet.pdf).
+
+# Documentation technique 
+
+-Annexe :
+[Diagramme de cas d'utilisation](PDF/Diagramme-cas-utilisation.pdf).
+[Diagramme de classes](PDF/Diagramme-classes-UML.pdf).
+[Diagramme de séquence](PDF/Diagramme-sequence.pdf).
