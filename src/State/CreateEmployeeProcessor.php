@@ -32,8 +32,7 @@ class CreateEmployeeProcessor implements ProcessorInterface
         $user->setNom($data->nom);
         $user->setPrenom($data->prenom);
         $user->setRoles(['ROLE_EMPLOYE']);
-        
-        // Générer automatiquement createdAt
+        $user->setActif(true);
         $user->setCreatedAt(new \DateTimeImmutable());
         
         // Générer un token API unique
