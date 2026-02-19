@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Cloudinary\Cloudinary;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +12,19 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class UploadController extends AbstractController
 {
+    #[Route('/api/test-token/{token}', name: 'test_token', methods: ['GET'])]
+    public function testToken(string $token, UserRepository $userRepository): JsonResponse
+    {
+        $user = $userRepository->findOneBy(['apiToken' => $token]);
+        
+        return new JsonResponse([
+            'found' => $user !== null,
+            'email' => $user?->getEmail(),
+            'actif' => $user?->isActif(),
+            'roles' => $user?->getRoles(),
+        ]);
+    }
+    
     private const MAX_FILE_SIZE = 5 * 1024 * 1024;
     
     private const ALLOWED_MIME_TYPES = [
