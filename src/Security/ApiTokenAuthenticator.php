@@ -20,53 +20,34 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
         private UserRepository $userRepository
     ) {}
 
- public function supports(Request $request): ?bool
-{
-    $hasAuth = $request->headers->has('Authorization');
-    error_log("🔍 supports() appelé - Authorization présent: " . ($hasAuth ? 'OUI' : 'NON'));
-    error_log("🔍 Headers complets: " . json_encode($request->headers->all()));
-    return $hasAuth;
-}
-
-public function authenticate(Request $request): Passport
-{
-    error_log("🔍 ApiTokenAuthenticator::authenticate() appelé");
-    error_log("🔍 Headers: " . json_encode($request->headers->all()));
-    
-    $authHeader = $request->headers->get('Authorization');
-    error_log("🔍 Authorization header reçu: " . ($authHeader ?? 'NULL'));
-
-    if (null === $authHeader) {
-        throw new CustomUserMessageAuthenticationException('No API token provided');
+    public function supports(Request $request): ?bool
+    {
+        // Retourne false si pas de token → requête anonyme autorisée pour PUBLIC_ACCESS
+        return $request->headers->has('Authorization') 
+            && str_starts_with($request->headers->get('Authorization', ''), 'Bearer ');
     }
 
-    // Extraire le token du format "Bearer xxx"
-    if (!str_starts_with($authHeader, 'Bearer ')) {
-        throw new CustomUserMessageAuthenticationException('Invalid Authorization header format');
+    public function authenticate(Request $request): Passport
+    {
+        $authHeader = $request->headers->get('Authorization');
+        $apiToken = substr($authHeader, 7);
+
+        return new SelfValidatingPassport(
+            new UserBadge($apiToken, function(string $token) {
+                $user = $this->userRepository->findOneBy(['apiToken' => $token]);
+
+                if (!$user) {
+                    throw new CustomUserMessageAuthenticationException('Invalid credentials.');
+                }
+
+                if (!$user->isActif()) {
+                    throw new CustomUserMessageAuthenticationException('Account disabled.');
+                }
+
+                return $user;
+            })
+        );
     }
-    
-    $apiToken = substr($authHeader, 7); // Enlever "Bearer "
-
-    return new SelfValidatingPassport(
-    new UserBadge($apiToken, function(string $token) {
-        $user = $this->userRepository->findOneBy(['apiToken' => $token]);
-
-        if (!$user) {
-            error_log("❌ Aucun user trouvé avec ce token");
-            throw new CustomUserMessageAuthenticationException('Invalid credentials.');
-        }
-
-        error_log("✅ User trouvé: " . $user->getEmail() . " - Actif: " . ($user->isActif() ? 'OUI' : 'NON'));
-
-        if (!$user->isActif()) {
-            error_log("❌ User désactivé");
-            throw new CustomUserMessageAuthenticationException('Account disabled.');
-        }
-
-        return $user;
-        })
-    );
-}
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
