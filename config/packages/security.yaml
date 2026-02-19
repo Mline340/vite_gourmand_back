@@ -31,7 +31,9 @@ security:
         api_public:
             pattern: ^/api/(menus|horaires|plats|themes|regimes|contact)
             stateless: true
-            security: false
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\ApiTokenAuthenticator
         main:
             pattern: ^/api
             stateless: true
