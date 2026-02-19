@@ -47,6 +47,12 @@ security:
         - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
+        - { path: ^/api/menus, roles: PUBLIC_ACCESS }
+        - { path: ^/api/horaires, roles: PUBLIC_ACCESS }
+        - { path: ^/api/contact, roles: PUBLIC_ACCESS }
+        - { path: ^/api/plats, roles: PUBLIC_ACCESS }
+        - { path: ^/api/themes, roles: PUBLIC_ACCESS }
+        - { path: ^/api/regimes, roles: PUBLIC_ACCESS }
         # Routes admin 
         - { path: ^/api/employes/\d+/toggle, roles: ROLE_ADMIN } 
         - { path: ^/api/admin, roles: ROLE_ADMIN }  
