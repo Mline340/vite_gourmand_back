@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-use Apiplatform\Metadata\Post;
+use ApiPlatform\Metadata\Post;
 use App\State\ContactProcessor;
 
 #[Post(

@@ -77,10 +77,15 @@ final class LoginProcessor implements ProcessorInterface
             'email' => $user->getUserIdentifier(),
             'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
         ]);
+
+        // Regénérer le token à chaque connexion
+        $newToken = bin2hex(random_bytes(32));
+        $user->setApiToken($newToken);
+        $this->em->flush();
         
         return new JsonResponse([
             'user' => $user->getUserIdentifier(),
-            'apiToken' => $user->getApiToken(),
+            'apiToken' => $newToken,
             'roles' => array_map(fn($role) => strtolower(str_replace('ROLE_', '', $role)), $user->getRoles()),
             'userId' => $user->getId(),
         ]);
