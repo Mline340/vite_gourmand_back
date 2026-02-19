@@ -28,7 +28,10 @@ security:
             security: false 
             lazy: true
             provider: app_user_provider
-            
+        api_public:
+            pattern: ^/api/(menus|horaires|plats|themes|regimes|contact)
+            stateless: true
+            security: false
         main:
             pattern: ^/api
             stateless: true
