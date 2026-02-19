@@ -194,7 +194,9 @@ GROUP BY menu_id;'
 
 # Documentation technique 
 
+- [Documentation technique](PDF/Documentation%20technique.pdf)
+
 -Annexe :
-[Diagramme de cas d'utilisation](PDF/Diagramme-cas-utilisation.pdf).
-[Diagramme de classes](PDF/Diagramme-classes-UML.pdf).
-[Diagramme de séquence](PDF/Diagramme-sequence.pdf).
+- [Diagramme de cas d'utilisation](PDF/Diagramme-cas-utilisation.pdf).
+- [Diagramme de classes](PDF/Diagramme-classes-UML.pdf).
+- [Diagramme de séquence](PDF/Diagramme-sequence.pdf).
