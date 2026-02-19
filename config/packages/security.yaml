@@ -29,7 +29,7 @@ security:
             lazy: true
             provider: app_user_provider
         api_public:
-            pattern: ^/api/(menus|horaires|plats|themes|regimes|contact)
+            pattern: ^/api/(menus|horaires|plats|themes|regimes|contact|avis)
             stateless: true
             lazy: true
             provider: app_user_provider
@@ -49,7 +49,7 @@ security:
     access_control:
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/contexts, roles: PUBLIC_ACCESS }
-        - { path: ^/api$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/avis, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
         - { path: ^/api/menus, roles: PUBLIC_ACCESS }
