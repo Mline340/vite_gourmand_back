@@ -111,7 +111,6 @@ class Menu
      * @var Collection<int, Plat>
      */
     #[ORM\OneToMany(targetEntity: Plat::class, mappedBy: 'menu', cascade: ['persist', 'remove'])]
-    #[Assert\Count(min: 1, minMessage: "Un menu doit contenir au moins un plat")]
     #[Groups(['menu:read'])]
     private Collection $plats;
 
